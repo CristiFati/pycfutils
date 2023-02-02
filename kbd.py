@@ -45,7 +45,9 @@ if plat == "win":
  
  
 else:  # Nix
-    import select, termios, tty
+    import select
+    import termios
+    import tty
 
     def __key_pressed_func():
         return sys.stdin in select.select([sys.stdin], [], [], 0)[0]

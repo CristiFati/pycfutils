@@ -65,7 +65,8 @@ else:  # Nix
             termios.tcsetattr(sys.stdin, termios.TCSADRAIN, attrs)
 
 
-read_key = fts.partial(__read_key, kp_func=__key_pressed_func, rk_func=__read_key_func, start_func=__start_func, end_func=__end_func)
+read_key = fts.partial(__read_key, kp_func=__key_pressed_func, rk_func=__read_key_func,
+                       start_func=__start_func, end_func=__end_func)
 
 
 if __name__ == "__main__":

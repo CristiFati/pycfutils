@@ -1,2 +1,2 @@
-# PyUtils
-PyUtils - a collection of scripts / utilities
+# *CFPyUtils*
+*CFPyUtils* (Cristi Fati's *PyUtils*) - a collection of (*Python*) scripts / utilities

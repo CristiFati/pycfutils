@@ -15,19 +15,19 @@ plat = sys.platform[:3].lower()
 
 
 def __read_key(interval=0.5, poll_interval=0.1, kp_func=None, rk_func=None, start_func=None, end_func=None):
-    ctx = start_func() if start_func else None
+    ctx = start_func() if start_func is not None else None
     try:
         poll_interval = interval / 2.0 if poll_interval > interval / 2.0 else poll_interval
         time_end = time.time() + interval
         while True:
-            if kp_func and kp_func():
-                return rk_func() if rk_func else None
+            if kp_func is not None and kp_func():
+                return rk_func() if rk_func is not None else None
             if time.time() >= time_end:
                 break
             time.sleep(poll_interval)
         return None
     finally:
-        if end_func:
+        if end_func is not None:
             end_func(ctx)
 
 
@@ -61,7 +61,7 @@ else:  # Nix
         return attrs
 
     def __end_func(attrs):
-        if attrs:
+        if attrs is not None:
             termios.tcsetattr(sys.stdin, termios.TCSADRAIN, attrs)
 
 

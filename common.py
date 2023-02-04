@@ -21,7 +21,7 @@ def dims_2d(n):
     if n <= 0:
         return 0, 0
     sq = round(math.sqrt(n))
-        return sq, math.ceil(n / sq)
+    return sq, math.ceil(n / sq)
 
 
 if __name__ == "__main__":

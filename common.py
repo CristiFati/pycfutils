@@ -24,6 +24,16 @@ def dims_2d(n):
     return sq, math.ceil(n / sq)
 
 
+def uniques(seq):
+    ret = []
+    handled = set()
+    for e in seq:
+        if e not in handled:
+            ret.append(e)
+            handled.add(e)
+    return tuple(ret)
+
+
 if __name__ == "__main__":
     print("This script is not meant to be run directly.\n")
     sys.exit(-1)

@@ -1,5 +1,5 @@
 
-# Common utilities script by (pussious) cfati
+# CTypes utilities script by (pussious) cfati
 
 import ctypes as cts
 import sys

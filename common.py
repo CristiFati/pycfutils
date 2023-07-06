@@ -7,7 +7,7 @@ import time
 
 
 def int_fmt(limit):
-    return "{{:0{:d}d}}".format(math.ceil(math.log10(max(limit, 1))))
+    return "{{:0{:d}d}}".format(math.ceil(math.log10(max(limit, 2))))
 
 
 def ts_str(timestamp=None, human_readable=False):

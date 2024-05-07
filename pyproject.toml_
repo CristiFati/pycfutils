@@ -1,0 +1,47 @@
+# Not usable yet. Currently using (old) setup.py.
+
+[project]
+name = "pycfutils"
+version = "0.0.0"
+description = "PyCFUtils (Cristi Fati's Utils for Python (&& more)) - a collection of (cool) scripts / utilities"
+
+authors = [
+  {name = "Cristi Fati", email = "fati_utcluj@yahoo.com"},
+]
+
+maintainers = [
+  {name = "Cristi Fati", email = "fati_utcluj@yahoo.com"},
+]
+readme = "README.md"
+license = {file = "LICENSE"}
+
+requires-python = ">=3"
+
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX",
+  "Operating System :: Unix",
+  "Programming Language :: C",
+  "Programming Language :: C++",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Software Development",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.poetry.dev-dependencies]
+black = "^22.3.0"
+isort = "^5.11.5"
+flake8 = "^4.0.1"
+
+[tool.isort]
+profile = "black"
+line_length = 100
+atomic = true
+

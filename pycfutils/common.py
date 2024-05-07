@@ -1,40 +1,64 @@
-
-# Common utilities script by (pussious) cfati
-
 import math
 import sys
 import time
+from datetime import datetime
+from typing import Sequence, Tuple, Union
+
+__all__ = (
+    "int_format",
+    "timestamp_string",
+    "dimensions_2d",
+    "uniques",
+)
 
 
-def int_fmt(limit):
-    return "{{:0{:d}d}}".format(math.ceil(math.log10(max(limit, 2))))
+def int_format(limit: int) -> str:
+    sgn = 1 if limit < 0 else 0
+    return f"{{:0{math.ceil(math.log10(max(abs(limit), 2))) + sgn:d}d}}"
 
 
-def ts_str(timestamp=None, human_readable=False):
-    tm = (time.gmtime(timestamp) if isinstance(timestamp, (int, float, None.__class__)) else timestamp)[:6]
+def timestamp_string(
+    timestamp: Union[None, int, float, Sequence] = None,
+    human_readable: bool = False,
+    date_separator: str = "-",
+    time_separator: str = ":",
+    separator: str = " ",
+) -> str:
+    tm = (
+        time.gmtime(timestamp)
+        if timestamp is None or isinstance(timestamp, (int, float))
+        else timestamp.timetuple()
+        if isinstance(timestamp, datetime)
+        else timestamp
+    )[:6]
     if human_readable:
-        return "{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}".format(*tm)
-    return "{:04d}{:02d}{:02d}{:02d}{:02d}{:02d}".format(*tm)
+        return (
+            f"{tm[0]:04d}{date_separator}"
+            f"{tm[1]:02d}{date_separator}"
+            f"{tm[2]:02d}{separator}"
+            f"{tm[3]:02d}{time_separator}"
+            f"{tm[4]:02d}{time_separator}{tm[5]:02d}"
+        )
+    return f"{tm[0]:04d}{tm[1]:02d}{tm[2]:02d}{tm[3]:02d}{tm[4]:02d}{tm[5]:02d}"
 
 
-def dims_2d(n):
+def dimensions_2d(n: int) -> Tuple:
     if n <= 0:
         return 0, 0
     sq = round(math.sqrt(n))
     return sq, math.ceil(n / sq)
 
 
-def uniques(seq):
+def uniques(sequence: Sequence) -> Sequence:
     ret = []
     handled = set()
-    for e in seq:
+    for e in sequence:
         if e not in handled:
             ret.append(e)
             handled.add(e)
-    return tuple(ret)
+    return ret if isinstance(sequence, list) else tuple(ret)
 
 
 if __name__ == "__main__":
     print("This script is not meant to be run directly.\n")
     sys.exit(-1)
-

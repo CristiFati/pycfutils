@@ -2,7 +2,6 @@ import ctypes as cts
 import sys
 from typing import Any, Optional
 
-cts.c_bool = 1
 try:
     _CLS_CDATA = cts.c_int.__mro__[-2]
 except Exception:

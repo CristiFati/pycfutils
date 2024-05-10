@@ -15,16 +15,16 @@ python -m pip install --upgrade pycfutils
 ## Usage example
 
 ```python
-import pycfutils.common
+import pycfutils.miscellaneous as misc
 import pycfutils.keyboard
 
-print("Press a key...")
-print(pycfutils.keyboard.read_key())
-print(pycfutils.common.timestamp_string(human_readable=True))
+print("Press a key in less than one second...")
+print(pycfutils.keyboard.read_key(interval=1))
+print(misc.timestamp_string(human_readable=True))
 
 # --- Windows only ---
 import pycfutils.gui
 
-pycfutils.gui.message_box("Title", "Text to display", 200, 200)
+print(pycfutils.gui.message_box("Title", "Text to display", x=320, y=200))
 ```
 

@@ -32,7 +32,7 @@ if [ -z "${NO_TEST}" ]; then
     fi
     for _venv in $(ls -d ${TEST_VENV_PATTERN}); do
         printf -- "Using environment: %s\n" ${_venv}
-         . ${_venv}/bin/activate
+         . "${_venv}/bin/activate"
         python -VV
         python -m pip uninstall -y pycfutils
         python -m pip -v install --no-index -f "${TEST_WHEEL_DIR}" pycfutils

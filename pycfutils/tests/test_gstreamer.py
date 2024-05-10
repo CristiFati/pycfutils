@@ -1,7 +1,4 @@
-import sys
 import unittest
-
-from pycfutils.exceptions import ModuleException
 
 try:
     from pycfutils.gstreamer.registry_access import RegistryAccess

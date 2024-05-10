@@ -1,0 +1,72 @@
+---------- FILE MAINTAINED MANUALLY ----------
+
+Records listed in reverse chronological order (most recent on top).
+Users are encouraged to "log" their significant (relative term) changes like:
+  - New features
+  - Critical fixes
+  - Large code changes
+  - ...
+
+File is organized in sections where each section represents a release name
+A release name is enclosed in square brackets and starts with a "v",
+  just like its tag name (except for the first one which is "TBR")
+Changes under each release are indented by 4 spaces and start with a hyphen ("-"):
+    1.1. A PR (or issue) description
+    1.2. The URL on the following line (aligned with the description)
+or (if there's no PR / issue):
+    2.1. A brief description
+    2.2. Optionally (same alignment as #1.2.), separated by coma(s) (",") in any order:
+        - Name (real, nick user) - starting with at ("@")
+        - Date - YYYY/MM/DD, YY/MM/DD, YYYYMMDD, YYMMDD
+        - Commit hash(es) - starting with a pound ("#")
+
+Example:
+
+[TBR]
+    - Issue reporting a bug
+      https://github.com/CristiFati/pycfutils/issues/...
+    - Untracked change (feature)
+      240510, #31416ab, @DummyUser
+
+[v6.1.8]
+    - Untracked change - other
+      @John Doe, 2024/03/31
+    - A PR description
+      https://github.com/CristiFati/pycfutils/pulls/...
+    - Some other untracked change
+    - Some other untracked change (0)
+      #cd27183
+
+
+===============================================================================
+C         H         A         N        G        E         L         O         G
+===============================================================================
+
+[TBR]
+    - Improve versioning
+      @CristiFati, 240510
+    - Add function for path ancestor
+      @CristiFati, 240510
+    - Rename common.py to miscellaneous.py
+      @CristiFati, 240510
+
+[v2024.05.08.post1]
+    - Bugfix
+      @CristiFati, #7e7114a
+
+[v2024.05.08]
+    - Build and tests
+      @CristiFati, 240508
+    - GUI package
+      @CristiFati, 240508
+    - Reorganize file structure
+      @CristiFati, 240508, #678a0613e1e5eecd759bca1f3e13dc388ae45dcb
+    - CTypes module (utilities)
+      @CristiFati, 230203
+    - Initial common module
+      @CristiFati, 230203
+    - License set to MIT
+      @CristiFati, 221220
+    - read_key function
+      @CristiFati, 221220
+

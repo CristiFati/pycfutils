@@ -2,19 +2,44 @@ import math
 import sys
 import time
 from datetime import datetime
-from typing import Sequence, Tuple, Union
+from os import PathLike
+from os.path import dirname
+from typing import AnyStr, Sequence, Tuple, Union
 
 __all__ = (
-    "int_format",
-    "timestamp_string",
     "dimensions_2d",
+    "int_format",
+    "path_ancestor",
+    "timestamp_string",
     "uniques",
 )
+
+
+def dimensions_2d(n: int) -> Tuple:
+    if n <= 0:
+        return 0, 0
+    sq = round(math.sqrt(n))
+    return sq, math.ceil(n / sq)
 
 
 def int_format(limit: int) -> str:
     sgn = 1 if limit < 0 else 0
     return f"{{:0{math.ceil(math.log10(max(abs(limit), 2))) + sgn:d}d}}"
+
+
+# pathlib.Path.parents equivalent
+def path_ancestor(path: Union[PathLike, AnyStr], level: int = 1) -> AnyStr:
+    pass
+    if level <= 0:
+        return path if isinstance(path, (str, bytes)) else str(path)
+    ret = dirname(path)
+    while level > 1:
+        path = ret
+        ret = dirname(path)
+        if ret == path:
+            break
+        level -= 1
+    return ret
 
 
 def timestamp_string(
@@ -40,13 +65,6 @@ def timestamp_string(
             f"{tm[4]:02d}{time_separator}{tm[5]:02d}"
         )
     return f"{tm[0]:04d}{tm[1]:02d}{tm[2]:02d}{tm[3]:02d}{tm[4]:02d}{tm[5]:02d}"
-
-
-def dimensions_2d(n: int) -> Tuple:
-    if n <= 0:
-        return 0, 0
-    sq = round(math.sqrt(n))
-    return sq, math.ceil(n / sq)
 
 
 def uniques(sequence: Sequence) -> Sequence:

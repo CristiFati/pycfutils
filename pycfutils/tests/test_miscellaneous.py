@@ -1,3 +1,5 @@
+import os
+import pathlib
 import unittest
 from datetime import datetime
 
@@ -5,6 +7,26 @@ from pycfutils import miscellaneous
 
 
 class MiscellaneousTestCase(unittest.TestCase):
+    def setUp(self):
+        self.cd = os.getcwd()
+        self.cds = (self.cd, self.cd.encode(), pathlib.Path(self.cd))
+
+    def test_dimensions_2d(self):
+        self.assertEqual(miscellaneous.dimensions_2d(-3), (0, 0))
+        self.assertEqual(miscellaneous.dimensions_2d(0), (0, 0))
+        self.assertEqual(miscellaneous.dimensions_2d(1), (1, 1))
+        self.assertEqual(miscellaneous.dimensions_2d(2), (1, 2))
+        self.assertEqual(miscellaneous.dimensions_2d(3), (2, 2))
+        self.assertEqual(miscellaneous.dimensions_2d(4), (2, 2))
+        self.assertEqual(miscellaneous.dimensions_2d(5), (2, 3))
+        self.assertEqual(miscellaneous.dimensions_2d(6), (2, 3))
+        self.assertEqual(miscellaneous.dimensions_2d(7), (3, 3))
+        self.assertEqual(miscellaneous.dimensions_2d(8), (3, 3))
+        self.assertEqual(miscellaneous.dimensions_2d(9), (3, 3))
+        self.assertEqual(miscellaneous.dimensions_2d(10), (3, 4))
+        self.assertEqual(miscellaneous.dimensions_2d(13), (4, 4))
+        self.assertEqual(miscellaneous.dimensions_2d(20), (4, 5))
+
     def test_int_format(self):
         self.assertEqual(miscellaneous.int_format(-101), "{:04d}")
         self.assertEqual(miscellaneous.int_format(-100), "{:03d}")
@@ -17,6 +39,23 @@ class MiscellaneousTestCase(unittest.TestCase):
         self.assertEqual(miscellaneous.int_format(11), "{:02d}")
         self.assertEqual(miscellaneous.int_format(100), "{:02d}")
         self.assertEqual(miscellaneous.int_format(101), "{:03d}")
+
+    def test_path_ancestor(self):
+        for cd in self.cds:
+            self.assertEqual(
+                miscellaneous.path_ancestor(cd, level=1), os.path.dirname(cd)
+            )
+        self.assertEqual(miscellaneous.path_ancestor(self.cd, 0), self.cd)
+        self.assertEqual(miscellaneous.path_ancestor(""), "")
+        self.assertEqual(miscellaneous.path_ancestor(os.path.sep, level=3), os.path.sep)
+        idx = self.cd.rfind(os.path.sep)
+        level = 1
+        while idx != -1:
+            part = self.cd[:idx]
+            if part:
+                self.assertEqual(miscellaneous.path_ancestor(self.cd, level), part)
+            level += 1
+            idx = self.cd.rfind(os.path.sep, 0, idx)
 
     def test_timestamp_string(self):
         ts = (2024, 5, 6, 12, 34, 56)
@@ -39,19 +78,3 @@ class MiscellaneousTestCase(unittest.TestCase):
         self.assertEqual(miscellaneous.uniques(l0), l1)
         self.assertEqual(miscellaneous.uniques((e for e in l0)), tuple(l1))
         self.assertEqual(set(miscellaneous.uniques(set(l0))), set(l0))
-
-    def test_dimensions_2d(self):
-        self.assertEqual(miscellaneous.dimensions_2d(-3), (0, 0))
-        self.assertEqual(miscellaneous.dimensions_2d(0), (0, 0))
-        self.assertEqual(miscellaneous.dimensions_2d(1), (1, 1))
-        self.assertEqual(miscellaneous.dimensions_2d(2), (1, 2))
-        self.assertEqual(miscellaneous.dimensions_2d(3), (2, 2))
-        self.assertEqual(miscellaneous.dimensions_2d(4), (2, 2))
-        self.assertEqual(miscellaneous.dimensions_2d(5), (2, 3))
-        self.assertEqual(miscellaneous.dimensions_2d(6), (2, 3))
-        self.assertEqual(miscellaneous.dimensions_2d(7), (3, 3))
-        self.assertEqual(miscellaneous.dimensions_2d(8), (3, 3))
-        self.assertEqual(miscellaneous.dimensions_2d(9), (3, 3))
-        self.assertEqual(miscellaneous.dimensions_2d(10), (3, 4))
-        self.assertEqual(miscellaneous.dimensions_2d(13), (4, 4))
-        self.assertEqual(miscellaneous.dimensions_2d(20), (4, 5))

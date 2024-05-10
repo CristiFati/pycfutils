@@ -50,10 +50,12 @@ class MiscellaneousTestCase(unittest.TestCase):
         self.assertEqual(miscellaneous.path_ancestor(os.path.sep, level=3), os.path.sep)
         idx = self.cd.rfind(os.path.sep)
         level = 1
-        while idx != -1:
+        while True:
             part = self.cd[:idx]
-            if part:
-                self.assertEqual(miscellaneous.path_ancestor(self.cd, level), part)
+            # print(idx, part, level, miscellaneous.path_ancestor(self.cd, level))
+            if os.path.dirname(part) == part:
+                break
+            self.assertEqual(miscellaneous.path_ancestor(self.cd, level), part)
             level += 1
             idx = self.cd.rfind(os.path.sep, 0, idx)
 

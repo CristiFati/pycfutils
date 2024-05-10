@@ -7,8 +7,8 @@ from pycfutils import gui
 # @TODO - cfati: Dummy
 class GUITestCase(unittest.TestCase):
     def test_message_box(self):
-        message_box_name = "message_box"
+        message_box = getattr(gui, "message_box", None)
         if sys.platform[:3].lower() == "win":
-            self.assertIsNotNone(getattr(gui, message_box_name, None))
+            self.assertIsNotNone(message_box)
         else:
-            self.assertIsNone(getattr(gui, message_box_name, None))
+            self.assertIsNone(message_box)

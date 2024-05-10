@@ -52,9 +52,7 @@ def timestamp_string(
     tm = (
         time.gmtime(timestamp)
         if timestamp is None or isinstance(timestamp, (int, float))
-        else timestamp.timetuple()
-        if isinstance(timestamp, datetime)
-        else timestamp
+        else timestamp.timetuple() if isinstance(timestamp, datetime) else timestamp
     )[:6]
     if human_readable:
         return (

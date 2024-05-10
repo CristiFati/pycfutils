@@ -4,11 +4,13 @@ import os
 import sys
 from typing import Optional
 
+from pycfutils.miscellaneous import path_ancestor
+
 __all__ = ()
 
 _IS_WIN = sys.platform[:3].lower() == "win"
 _DLL_NAME = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    path_ancestor(os.path.abspath(__file__), level=2),
     f"libcinterface.{'dll' if _IS_WIN else 'so'}",
 )
 

@@ -152,7 +152,7 @@ setup_args = dict(
     url=f"https://github.com/CristiFati/{_NAME}",
     download_url=f"https://pypi.org/project/{_NAME}",
     packages=find_packages(
-        include=(f"{_NAME}", f"{_NAME}.gui", f"{_NAME}.tests"),
+        include=(f"{_NAME}", f"{_NAME}.gstreamer", f"{_NAME}.gui", f"{_NAME}.tests"),
         exclude=("src", "__pycache__"),
     ),
     package_data={

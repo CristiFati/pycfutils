@@ -42,7 +42,14 @@ Example:
 C         H         A         N        G        E         L         O         G
 ===============================================================================
 
+
 [TBR]
+
+[2024.05.10]
+    - Test (local) utilities
+      @CristiFati, 240510
+    - Gstreamer stuff
+      @CristiFati, 240510
     - Improve versioning
       @CristiFati, 240510
     - Add function for path ancestor

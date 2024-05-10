@@ -76,6 +76,7 @@ class SDist(sdist):
     def _extra_files():
         ret = ["CHANGELOG"]
         ret.extend(_VS_FILES)
+        ret.extend((os.path.join("utils", e) for e in ("nix.sh", "win.bat")))
         if _IS_WIN:
             return ret
         ret.extend((os.path.join(_NAME, e) for e in _INCLUDE_FILES))

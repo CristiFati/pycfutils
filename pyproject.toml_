@@ -2,7 +2,8 @@
 
 [project]
 name = "pycfutils"
-version = "0.0.0"
+dynamic = ["version"]
+
 description = "PyCFUtils (Cristi Fati's Utils for Python (&& more)) - a collection of (cool) scripts / utilities"
 
 authors = [
@@ -34,6 +35,9 @@ classifiers = [
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = {attr = "package.__version__"}
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"

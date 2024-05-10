@@ -6,6 +6,7 @@ especially due to the workarounds (some quite lame) done to build the .dll.
 """
 
 import glob
+import importlib.util
 import os
 import sys
 
@@ -18,7 +19,6 @@ from wheel.bdist_wheel import bdist_wheel
 _IS_WIN = sys.platform[:3].lower() == "win"
 
 _NAME = "pycfutils"
-_VERSION = "0.0.0"
 
 if _IS_WIN:
     _EXT = ".dll"
@@ -41,6 +41,13 @@ _VS_FILES = tuple(
         "vs.sln",
     )
 )
+
+
+def version():
+    spec = importlib.util.spec_from_file_location("version", f"{_NAME}/version.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod.__version__
 
 
 # @TODO - cfati (gainarie): Get rid of sysconfig's EXT_SUFFIX (e.g.: .cp310-win_amd64)
@@ -67,7 +74,8 @@ class BDistWheelDll(bdist_wheel):
 class SDist(sdist):
     @staticmethod
     def _extra_files():
-        ret = list(_VS_FILES)
+        ret = ["CHANGELOG"]
+        ret.extend(_VS_FILES)
         if _IS_WIN:
             return ret
         ret.extend((os.path.join(_NAME, e) for e in _INCLUDE_FILES))
@@ -117,7 +125,7 @@ c_interface_dll = Library(
 
 setup_args = dict(
     name=_NAME,
-    version=_VERSION,
+    version=version(),
     description="PyCFUtils (Cristi Fati's Utils for Python (&& more)) - "
     "a collection of (cool) scripts / utilities",
     long_description=open("README.md").read(),

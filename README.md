@@ -28,7 +28,7 @@ import pycfutils.gui
 print(pycfutils.gui.message_box("Title", "Text to display", x=320, y=200))
 
 # --- Requires PyGObject (also might take some time to complete) ---
-from pycfutils.gstreamer.registry_access import RegistryAccess
+from pycfutils.gstreamer import RegistryAccess
 
 ra = RegistryAccess()
 print(ra.element_classes())

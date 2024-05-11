@@ -1,7 +1,7 @@
 import unittest
 
 try:
-    from pycfutils.gstreamer.registry_access import RegistryAccess
+    from pycfutils.gstreamer import RegistryAccess
 except Exception:
     RegistryAccess = None
 

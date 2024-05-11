@@ -41,17 +41,17 @@ else:  # Nix
 
 
 def read_key(
-    interval: float = 0.5,
+    timeout: float = 0.5,
     poll_interval: float = 0.1,
 ):
     ctx = _start_func() if _start_func is not None else None
-    if interval < 0:
+    if timeout < 0:
         return _read_key_func() if _read_key_func is not None else None
     try:
         poll_interval = (
-            interval / 2.0 if poll_interval > interval / 2.0 else poll_interval
+            timeout / 2.0 if poll_interval > timeout / 2.0 else poll_interval
         )
-        time_end = time.time() + interval
+        time_end = time.time() + timeout
         while True:
             if _key_pressed_func is not None and _key_pressed_func():
                 return _read_key_func() if _read_key_func is not None else None

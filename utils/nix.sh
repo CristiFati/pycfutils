@@ -21,7 +21,8 @@ fi
 
 if [ -z "${NO_TEST}" ]; then
     printf -- "Testing...\n"
-    export _PYTHONPATH=${PYTHONPATH}
+    _PYTHONPATH=${PYTHONPATH}
+    export PYTHONPATH=
     # @TODO - cfati: End with /* (if no pattern given)
     if [ -z "${TEST_VENV_PATTERN}" ]; then
         # TEST_VENV_PATTERN="${HOME}/Work/Dev/VEnvs/*"

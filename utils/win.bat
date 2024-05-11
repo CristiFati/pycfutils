@@ -12,7 +12,7 @@ if defined NO_TEST (
     :: @TODO - cfati: End with \ (if no pattern given)
     if not defined TEST_VENV_PATTERN (
         :: set TEST_VENV_PATTERN="e:\Work\Dev\VEnvs\"
-        set TEST_VENV_PATTERN="e:\Work\Dev\VEnvs\py_pc064_03.09_test0*"
+        set TEST_VENV_PATTERN="e:\Work\Dev\VEnvs\*test0"
     )
     if not defined TEST_WHEEL_DIR (
         set TEST_WHEEL_DIR="e:\Work\Dev\Repos\GitHub\CristiFati\pycfutils\src\dist"

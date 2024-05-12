@@ -26,7 +26,7 @@ if defined NO_TEST (
         python -m pip uninstall -y pycfutils
         python -m pip -v install --no-index -f %TEST_WHEEL_DIR% pycfutils
         python -m unittest discover -s "%_VENVS_DIR%\%%g\Lib\site-packages\pycfutils\tests"
-        python -c "import pycfutils.gui as pg, pycfutils.keyboard as pk;print('Press a key: ', pk.read_key(1));print(pg.message_box('aaaaa', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaa', 200, 200))"
+        python -c "import sys, pycfutils.gui as pg, pycfutils.keyboard as pk;print('Press a key: ', pk.read_key(1));print(pg.message_box('MBox', sys.version, 200, 200))"
         python -m pip uninstall -y pycfutils
         call deactivate
     )

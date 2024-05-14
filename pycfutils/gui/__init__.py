@@ -4,7 +4,7 @@ import os
 import sys
 from typing import Optional
 
-from pycfutils.miscellaneous import path_ancestor
+from pycfutils.system import path_ancestor
 
 __all__ = ()
 

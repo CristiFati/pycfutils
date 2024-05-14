@@ -2,14 +2,11 @@ import math
 import sys
 import time
 from datetime import datetime
-from os import PathLike
-from os.path import dirname
-from typing import AnyStr, Sequence, Tuple, Union
+from typing import Sequence, Tuple, Union
 
 __all__ = (
     "dimensions_2d",
     "int_format",
-    "path_ancestor",
     "timestamp_string",
     "uniques",
 )
@@ -25,21 +22,6 @@ def dimensions_2d(n: int) -> Tuple:
 def int_format(limit: int) -> str:
     sgn = 1 if limit < 0 else 0
     return f"{{:0{math.ceil(math.log10(max(abs(limit), 2))) + sgn:d}d}}"
-
-
-# pathlib.Path.parents equivalent
-def path_ancestor(path: Union[PathLike, AnyStr], level: int = 1) -> AnyStr:
-    pass
-    if level <= 0:
-        return path if isinstance(path, (str, bytes)) else str(path)
-    ret = dirname(path)
-    while level > 1:
-        path = ret
-        ret = dirname(path)
-        if ret == path:
-            break
-        level -= 1
-    return ret
 
 
 def timestamp_string(

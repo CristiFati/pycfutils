@@ -52,7 +52,7 @@ class SystemTestCase(unittest.TestCase):
         cnt = os.cpu_count()
         cpu_load = 1 / cnt
         free_cpus = int(cnt * (1 - mx))
-        cpu_ignore_error_count = 1  # Should be 0, but tests fail due to noise
+        ignore_cpu_count = 1  # Should be 0, but tests fail due to noise
         for cpus in range(1, free_cpus, 2):
             t = threading.Thread(
                 target=system.cpu_stress, kwargs={"duration": duration, "count": cpus}
@@ -60,4 +60,4 @@ class SystemTestCase(unittest.TestCase):
             t.start()
             cpu_avg, _ = self._cpu_data(duration=duration)
             t.join()
-            self.assertTrue(cpu_avg >= avg + (cpus - cpu_ignore_error_count) * cpu_load)
+            self.assertTrue(cpu_avg >= avg + (cpus - ignore_cpu_count) * cpu_load)

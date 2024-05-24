@@ -8,13 +8,13 @@ from typing import AnyStr, Union
 
 __all__ = (
     "path_ancestor",
-    "stress_cpu",
+    "cpu_stress",
 )
 
 
 # CPU
 
-_CPU_BATCH_POLL_CYCLES = 25000000
+_CPU_BATCH_CYCLES = 25000000
 
 
 def _cpu_stress(duration: float) -> None:
@@ -22,7 +22,7 @@ def _cpu_stress(duration: float) -> None:
     try:
         while 1:
             i = 0
-            for _ in range(_CPU_BATCH_POLL_CYCLES):
+            for _ in range(_CPU_BATCH_CYCLES):
                 i += 1
             if 0 < duration <= time.time() - start_time:
                 break

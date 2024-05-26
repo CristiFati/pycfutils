@@ -7,9 +7,9 @@ from pycfutils.exceptions import NetworkException
 
 __all__ = (
     "SOCKET_FAMILIES",
-    "SOCKET_FAMILY_DEFAULT",
+    # "SOCKET_FAMILY_DEFAULT",
     "SOCKET_TYPES",
-    "SOCKET_TYPE_DEFAULT",
+    # "SOCKET_TYPE_DEFAULT",
     "TCPServer",
     "parse_address",
     "connect_to_server",
@@ -258,7 +258,7 @@ def connect_to_server(
     port: int,
     family: Optional[str] = None,
     attempts: int = 1,
-    attempt_interval: float = _TIMEOUT_DEFAULT,
+    attempt_timeout: float = _TIMEOUT_DEFAULT,
     options: SockOpts = None,
 ) -> Tuple:
     attempts = max(attempts, 1)
@@ -268,7 +268,7 @@ def connect_to_server(
     address, port, family, type_ = record[0]
     client = None
     try:
-        client = _create_socket(family, type_, attempt_interval, options)
+        client = _create_socket(family, type_, attempt_timeout, options)
         res = None
         for _ in range(attempts):
             res = client.connect_ex((address, port))

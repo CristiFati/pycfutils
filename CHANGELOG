@@ -44,8 +44,22 @@ C         H         A         N        G        E         L         O         G
 
 
 [TBR]
+    - Add network functions
+      @CristiFati, 240526
+    - Rename module: keyboard -> io
+      @CristiFati, 240526
+    - Add cpu_stress feature
+      @CristiFati, 240524
+    - Move path_ancestor from miscellaneous to system
+      @CristiFati, 240524
+    - Various fixes and improvements
+      @CristiFati, 240512
 
-[2024.05.10]
+[2024.05.12.post1]
+    - Bugfix
+      @CristiFati, #50179a8
+
+[2024.05.12]
     - Test (local) utilities
       @CristiFati, 240510
     - Gstreamer stuff
@@ -57,11 +71,11 @@ C         H         A         N        G        E         L         O         G
     - Rename common.py to miscellaneous.py
       @CristiFati, 240510
 
-[v2024.05.08.post1]
+[v2024.05.08.post1 (deleted)]
     - Bugfix
       @CristiFati, #7e7114a
 
-[v2024.05.08]
+[v2024.05.08 (deleted)]
     - Build and tests
       @CristiFati, 240508
     - GUI package

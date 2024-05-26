@@ -17,10 +17,16 @@ python -m pip install --upgrade pycfutils
 ```python
 import pycfutils.io
 import pycfutils.miscellaneous as misc
+import pycfutils.network
+from pycfutils.exceptions import NetworkException
 
 print("Press a key in less than one second...")
 print(pycfutils.io.read_key(timeout=1))
 print(misc.timestamp_string(human_readable=True))
+try:
+    print(pycfutils.network.connect_to_server("127.0.0.1", 22))
+except NetworkException as e:
+    print(e)
 
 # --- Windows only ---
 import pycfutils.gui

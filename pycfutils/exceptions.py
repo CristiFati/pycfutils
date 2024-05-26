@@ -1,6 +1,6 @@
 import sys
 
-__all__ = ("CFUtilsException", "ModuleException")
+__all__ = ("CFUtilsException", "ModuleException", "NetworkException")
 
 
 class CFUtilsException(Exception):
@@ -8,6 +8,10 @@ class CFUtilsException(Exception):
 
 
 class ModuleException(CFUtilsException):
+    pass
+
+
+class NetworkException(CFUtilsException):
     pass
 
 

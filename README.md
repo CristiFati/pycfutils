@@ -15,11 +15,11 @@ python -m pip install --upgrade pycfutils
 ## Usage example
 
 ```python
+import pycfutils.io
 import pycfutils.miscellaneous as misc
-import pycfutils.keyboard
 
 print("Press a key in less than one second...")
-print(pycfutils.keyboard.read_key(timeout=1))
+print(pycfutils.io.read_key(timeout=1))
 print(misc.timestamp_string(human_readable=True))
 
 # --- Windows only ---

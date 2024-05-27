@@ -13,8 +13,8 @@ def parse_args(*argv):
     parser.add_argument(
         "--cpus",
         "-c",
-        default=1,
         choices=range(1, os.cpu_count() + 1),
+        default=1,
         type=int,
         help="number of CPUs to stress",
     )

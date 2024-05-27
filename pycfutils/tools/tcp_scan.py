@@ -62,9 +62,9 @@ def parse_args(*argv):
     if args.timeout < 0:
         parser.exit(status=-1, message="Timeout can't be negative\n")
     if args.first_port <= 0 or args.first_port > 0xFFFF:
-        parser.exit(status=-1, message="Invalid first port")
+        parser.exit(status=-1, message="Invalid first port\n")
     if args.last_port < 0 or args.last_port > 0xFFFF:
-        parser.exit(status=-1, message="Invalid last port")
+        parser.exit(status=-1, message="Invalid last port\n")
     elif args.last_port == 0:
         args.last_port = args.first_port
     args.first_ip = _parse_ipv4_string(args.first_ip or "")

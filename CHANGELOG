@@ -44,13 +44,19 @@ C         H         A         N        G        E         L         O         G
 
 
 [TBR]
+
+[2024.05.27]
+    - Windows hook mechanism improvement
+      @CristiFati, 240527
+    - Add CLI tools
+      @CristiFati, 240527
     - Add network functions
       @CristiFati, 240526
-    - Rename module: keyboard -> io
+    - Rename module: keyboard -> io (breaking change)
       @CristiFati, 240526
     - Add cpu_stress feature
       @CristiFati, 240524
-    - Move path_ancestor from miscellaneous to system
+    - Move path_ancestor from miscellaneous to system (breaking change)
       @CristiFati, 240524
     - Various fixes and improvements
       @CristiFati, 240512
@@ -68,7 +74,7 @@ C         H         A         N        G        E         L         O         G
       @CristiFati, 240510
     - Add function for path ancestor
       @CristiFati, 240510
-    - Rename common.py to miscellaneous.py
+    - Rename common.py to miscellaneous.py (breaking change)
       @CristiFati, 240510
 
 [v2024.05.08.post1 (deleted)]

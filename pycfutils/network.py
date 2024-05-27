@@ -81,8 +81,8 @@ def _parse_address(
     records = socket.getaddrinfo(
         address,
         port,
-        family=_SocketFamilyMap[family] if family is not None else 0,
-        type=_SocketTypeMap[type_] if type_ is not None else 0,
+        family=_SocketFamilyMap[family.lower()] if family is not None else 0,
+        type=_SocketTypeMap[type_.lower()] if type_ is not None else 0,
     )
     return tuple((*e[-1][:2], e[0], e[1]) for e in records)
 

@@ -40,7 +40,7 @@ def parse_args(*argv):
         print("Warning: Ignoring unknown arguments: {:}".format(unk))
 
     if args.port <= 0:
-        parser.exit(status=-1, message="Invalid port")
+        parser.exit(status=-1, message="Invalid port\n")
 
     return args, unk
 

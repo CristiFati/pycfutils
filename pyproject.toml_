@@ -4,7 +4,7 @@
 name = "pycfutils"
 dynamic = ["version"]
 
-description = "PyCFUtils (Cristi Fati's Utils for Python (&& more)) - a collection of (cool) scripts / utilities"
+description = "PyCFUtils (Cristi Fati's Utils for Python (&& more)) - a collection of goodies ((cool) scripts / utilities)"
 
 authors = [
   {name = "Cristi Fati", email = "fati_utcluj@yahoo.com"},

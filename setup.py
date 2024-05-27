@@ -128,7 +128,7 @@ setup_args = dict(
     name=_NAME,
     version=version(),
     description="PyCFUtils (Cristi Fati's Utils for Python (&& more)) - "
-    "a collection of (cool) scripts / utilities",
+    "a collection of goodies ((cool) scripts / utilities)",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     author="Cristi Fati",

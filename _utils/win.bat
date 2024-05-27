@@ -19,7 +19,7 @@ if defined NO_TEST (
     )
     call bat_funcs dirname %TEST_VENV_PATTERN% _VENVS_DIR
     set _VENVS_DIR=%_VENVS_DIR:"=%
-    for /f %%g in ('dir /b %TEST_VENV_PATTERN:"=%') do (
+    for /f %%g in ('dir /b /ad /a-l %TEST_VENV_PATTERN:"=%') do (
         echo Using environment: "%_VENVS_DIR%\%%g"
         call "%_VENVS_DIR%\%%g\Scripts\activate.bat"
         python -VV

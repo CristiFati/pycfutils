@@ -1,6 +1,6 @@
 # *PyCFUtils*
 
-*PyCFUtils* (**C**risti **F**ati's ***Utils*** for ***Py**thon* (&& more)) - a collection of (cool) scripts / utilities
+*PyCFUtils* (**C**risti **F**ati's ***Utils*** for ***Py**thon* (&& more)) - a collection of goodies ((cool) scripts / utilities)
 
 
 ## Install
@@ -40,3 +40,16 @@ ra = RegistryAccess()
 print(ra.element_classes())
 ```
 
+Also, there are some useful (CLI wrapper) scripts **in the *tools* folder**. 
+
+- *Nix*:
+
+    ```lang-bash
+    for script in $(find pycfutils/tools -maxdepth 1 -type f); do python ${script} -h; done
+    ```
+
+- *Win*:
+
+    ```lang-bat
+    for /f %g in ('dir /b /a-d pycfutils\tools') do (python pycfutils\tools\%g -h)
+    ```

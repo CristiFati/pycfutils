@@ -76,7 +76,7 @@ class SDist(sdist):
     def _extra_files():
         ret = ["CHANGELOG"]
         ret.extend(_VS_FILES)
-        ret.extend((os.path.join("utils", e) for e in ("nix.sh", "win.bat")))
+        ret.extend((os.path.join("_utils", e) for e in ("nix.sh", "win.bat")))
         if _IS_WIN:
             return ret
         ret.extend((os.path.join(_NAME, e) for e in _INCLUDE_FILES))
@@ -148,12 +148,12 @@ setup_args = dict(
         "Programming Language :: Python :: 3 :: Only",
         "Topic :: Software Development",
     ],
-    platforms=("All",),
+    platforms=["All",],
     license="MIT",
     url=f"https://github.com/CristiFati/{_NAME}",
     download_url=f"https://pypi.org/project/{_NAME}",
     packages=find_packages(
-        include=(f"{_NAME}", f"{_NAME}.gstreamer", f"{_NAME}.gui", f"{_NAME}.tests"),
+        include=(f"{_NAME}", f"{_NAME}.gstreamer", f"{_NAME}.gui", f"{_NAME}.tests", f"{_NAME}.tools"),
         exclude=("src", "__pycache__"),
     ),
     package_data={

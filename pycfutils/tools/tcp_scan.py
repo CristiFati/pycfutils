@@ -1,35 +1,19 @@
 #!/usr/bin/env python
 
 import argparse
+import socket
 import sys
+import time
 
 from pycfutils.exceptions import NetworkException
 from pycfutils.io import read_key
-from pycfutils.network import connect_to_server
+from pycfutils.network import SOCKET_TYPE_TCP, connect_to_server, parse_address
 
 
-def _parse_ipv4_string(ip: str) -> int:
-    arr = ip.split(".")
-    if len(arr) != 4:
-        return None
-    try:
-        arr = tuple(int(e) for e in arr)
-    except ValueError:
-        return None
-    for b in arr:
-        if b < 0 or b > 0xFF:
-            return None
-    return sum(e << (i * 8) for i, e in enumerate(reversed(arr)))
-
-
-def _ipv4_string(ip: int, zero_pad: bool = False) -> str:
-    if ip < 0 or ip > 0xFFFFFFFF:
-        return ""
-    ip_bytes = (ip >> 24) & 0xFF, (ip >> 16) & 0xFF, (ip >> 8) & 0xFF, ip & 0xFF
-    if zero_pad:
-        return "{:03d}.{:03d}.{:03d}.{:03d}".format(*ip_bytes)
-    else:
-        return "{:d}.{:d}.{:d}.{:d}".format(*ip_bytes)
+def _ip_string(ip: int, family: socket.AddressFamily) -> str:
+    size = 16 if family == socket.AF_INET6 else 4
+    addr = socket.inet_ntop(family, ip.to_bytes(length=size, byteorder="big"))
+    return addr.join(("[", "]")) if family == socket.AF_INET6 else addr
 
 
 def parse_args(*argv):
@@ -67,15 +51,27 @@ def parse_args(*argv):
         parser.exit(status=-1, message="Invalid last port\n")
     elif args.last_port == 0:
         args.last_port = args.first_port
-    args.first_ip = _parse_ipv4_string(args.first_ip or "")
-    if args.first_ip is None:
-        parser.exit(status=-1, message="Invalid first IP\n")
+    try:
+        record = parse_address(
+            args.first_ip or "", 0, type_=SOCKET_TYPE_TCP, exact_matches=1
+        )[0]
+    except NetworkException as e:
+        parser.exit(status=-1, message=f"Invalid first IP: {e}\n")
+    ipn = int.from_bytes(socket.inet_pton(record[2], record[0]), byteorder="big")
+    args.first_ip = ipn, record[2]
     if args.last_ip:
-        args.last_ip = _parse_ipv4_string(args.last_ip)
-        if args.last_ip is None:
-            parser.exit(status=-1, message="Invalid last IP\n")
+        try:
+            record = parse_address(
+                args.last_ip or "", 0, type_=SOCKET_TYPE_TCP, exact_matches=1
+            )[0]
+        except NetworkException as e:
+            parser.exit(status=-1, message=f"Invalid last IP: {e}\n")
+        ipn = int.from_bytes(socket.inet_pton(record[2], record[0]), byteorder="big")
+        args.last_ip = ipn, record[2]
     else:
         args.last_ip = args.first_ip
+    if args.first_ip[-1] != args.last_ip[-1]:
+        parser.exit(status=-1, message="IP families don't match\n")
 
     return args, unk
 
@@ -83,14 +79,17 @@ def parse_args(*argv):
 def main(*argv):
     args, _ = parse_args()
     print(
-        f"Scanning network from {_ipv4_string(args.first_ip)}"
-        f" to {_ipv4_string(args.last_ip)}"
+        f"Scanning network from {_ip_string(*args.first_ip)}"
+        f" to {_ip_string(*args.last_ip)}"
         f" on ports {args.first_port} to {args.last_port}"
         f" with a {args.timeout:.2f}s connection timeout.\n"
         "Press any to interrupt...\n"
     )
-    for ip in range(args.first_ip, args.last_ip + 1):
-        addr = _ipv4_string(ip)
+    fam = args.first_ip[-1]
+    total, ok = 0, 0
+    start_time = time.time()
+    for ip in range(args.first_ip[0], args.last_ip[0] + 1):
+        addr = _ip_string(ip, fam)
         for port in range(args.first_port, args.last_port + 1):
             print(
                 "Probing {:s}:{:d} (for {:.2f} seconds)...".format(
@@ -98,13 +97,19 @@ def main(*argv):
                 )
             )
             try:
+                total += 1
                 connect_to_server(addr, port, attempts=1, attempt_timeout=args.timeout)
-                print("  --- SUCCESS !!! ---")
+                print("  --- !!! SUCCESS !!! ---")
             except NetworkException:
                 pass
+            else:
+                ok += 1
             if read_key() is not None:
                 print("\nInterrupted by user.")
                 break
+    print(
+        f"Attempted {total} ({ok} successful) connection(s) in {time.time() - start_time:.3f} seconds"
+    )
 
 
 if __name__ == "__main__":

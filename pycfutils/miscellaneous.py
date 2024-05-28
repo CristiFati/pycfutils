@@ -1,15 +1,19 @@
 import math
+import operator
 import sys
 import time
 from datetime import datetime
-from typing import Sequence, Tuple, Union
+from typing import Callable, Iterator, Optional, Sequence, Tuple, Union
 
 __all__ = (
     "dimensions_2d",
     "int_format",
+    "progression",
     "timestamp_string",
     "uniques",
 )
+
+Numeric = Union[int, float]
 
 
 def dimensions_2d(n: int) -> Tuple:
@@ -22,6 +26,25 @@ def dimensions_2d(n: int) -> Tuple:
 def int_format(limit: int) -> str:
     sgn = 1 if limit < 0 else 0
     return f"{{:0{math.ceil(math.log10(max(abs(limit), 2))) + sgn:d}d}}"
+
+
+def progression(
+    ratio: Numeric,
+    first: Numeric = 1,
+    count: int = 16,
+    op: Callable[[Numeric, Numeric], Numeric] = operator.mul,
+    stop_function: Optional[Callable[[Numeric], bool]] = None,
+) -> Iterator[Numeric]:
+    idx = 0
+    val = float(first) if isinstance(ratio, float) else first
+    while True:
+        yield val
+        val = op(val, ratio)
+        idx += 1
+        if 0 < count <= idx:
+            break
+        if stop_function is not None and stop_function(val):
+            break
 
 
 def timestamp_string(

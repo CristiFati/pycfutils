@@ -1,3 +1,4 @@
+import operator
 import unittest
 from datetime import datetime
 
@@ -33,6 +34,30 @@ class MiscellaneousTestCase(unittest.TestCase):
         self.assertEqual(miscellaneous.int_format(11), "{:02d}")
         self.assertEqual(miscellaneous.int_format(100), "{:02d}")
         self.assertEqual(miscellaneous.int_format(101), "{:03d}")
+
+    def test_progression(self):
+        self.assertEqual(list(miscellaneous.progression(2, count=3)), [1, 2, 4])
+        self.assertEqual(
+            list(miscellaneous.progression(3, stop_function=lambda arg: arg > 80)),
+            [1, 3, 9, 27],
+        )
+        self.assertEqual(list(miscellaneous.progression(-2, count=4)), [1, -2, 4, -8])
+        self.assertEqual(
+            list(
+                miscellaneous.progression(
+                    -1, op=operator.add, count=0, stop_function=lambda arg: arg <= -3
+                )
+            ),
+            [1, 0, -1, -2],
+        )
+        self.assertEqual(
+            list(miscellaneous.progression(0.5, first=0, count=4, op=operator.add)),
+            [0.0, 0.5, 1, 1.5],
+        )
+        self.assertEqual(
+            list(miscellaneous.progression(0, first=0, count=9, op=operator.add)),
+            [0] * 9,
+        )
 
     def test_timestamp_string(self):
         ts = (2024, 5, 6, 12, 34, 56)

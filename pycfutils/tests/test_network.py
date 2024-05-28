@@ -180,11 +180,12 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
         )
 
     def test_server_client(self):
-        with network.TCPServer(self.lh4, self.port, silent=True):
+        with network.TCPServer(self.lh4, self.port, silent=True) as srv:
             self.assertEqual(
                 network.connect_to_server(self.lh4, self.port, attempt_timeout=0.5)[0],
                 self.lh4,
             )
+            self.assertEqual((srv.handled_total, srv.handled_ok), (1, 1))
             self.assertRaises(
                 network.NetworkException,
                 network.connect_to_server,
@@ -193,13 +194,14 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
                 {"attempt_timeout": 0},
             )
         if self.ipv6:
-            with network.TCPServer(self.lh6, self.port, silent=True):
+            with network.TCPServer(self.lh6, self.port, silent=True) as srv:
                 self.assertEqual(
                     network.connect_to_server(self.lh6, self.port, attempt_timeout=0.5)[
                         0
                     ],
                     self.lh6,
                 )
+                self.assertEqual((srv.handled_total, srv.handled_ok), (1, 1))
                 self.assertRaises(
                     network.NetworkException,
                     network.connect_to_server,

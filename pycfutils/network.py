@@ -157,6 +157,8 @@ class _Server:
         self.thread = None
         self.socket = None
         self.daemon_thread = False
+        self.handled_total = 0
+        self.handled_ok = 0
         record = parse_address(
             address, port=port, family=family, type_=type_, exact_matches=1
         )
@@ -211,7 +213,9 @@ class _Server:
                 self.socket
                 in select.select((self.socket,), (), (), self.poll_timeout)[0]
             ):
-                self.handle_incoming()
+                if self.handle_incoming():
+                    self.handled_ok += 1
+                self.handled_total += 1
 
     def close(self) -> None:
         _close_socket(self.socket)

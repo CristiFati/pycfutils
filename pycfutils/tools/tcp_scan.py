@@ -86,7 +86,7 @@ def main(*argv):
         f"Scanning network from {_ipv4_string(args.first_ip)}"
         f" to {_ipv4_string(args.last_ip)}"
         f" on ports {args.first_port} to {args.last_port}"
-        f" with a {args.timeout:.2f} connection timeout.\n"
+        f" with a {args.timeout:.2f}s connection timeout.\n"
         "Press any to interrupt...\n"
     )
     for ip in range(args.first_ip, args.last_ip + 1):

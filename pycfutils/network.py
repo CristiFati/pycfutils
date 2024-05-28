@@ -105,8 +105,8 @@ def parse_address(
             family,
             type_,
         )
-    except (socket.gaierror, socket.error) as e:
-        raise NetworkException from e
+    except OSError as e:
+        raise NetworkException("Could not parse address") from e
     else:
         if exact_matches > 0 and exact_matches != len(records):
             raise NetworkException(
@@ -132,7 +132,7 @@ def _create_socket(
             for level, opts in options.items():
                 for name, value in opts.items():
                     sock.setsockopt(level, name, value)
-    except Exception:
+    except OSError:
         sock.close()
         raise
     return sock
@@ -165,9 +165,9 @@ class _Server:
             self.socket = _create_socket(family, self.type, 0, options)
             self.socket.bind((address, port))
             self.socket.listen(backlog)
-        except Exception as e:
+        except OSError as e:
             self.close()
-            raise NetworkException from e
+            raise NetworkException("Error creating server") from e
 
     def __enter__(self):
         if not self.start():
@@ -247,7 +247,7 @@ class TCPServer(_Server):
                 print(f"Established connection from {peer[0]:s}:{peer[1]:d}")
             _close_socket(client)
             return True
-        except Exception as e:
+        except OSError as e:
             if not self.silent:
                 print(e)
             return False
@@ -275,8 +275,10 @@ def connect_to_server(
             if res == 0:
                 return client.getsockname()
         else:
-            raise NetworkException(f"Connect returned {res}")
-    except Exception as e:
-        raise NetworkException from e
+            raise NetworkException(f"Error connecting: {res}")
+    except NetworkException:
+        raise
+    except OSError as e:
+        raise NetworkException("Could not connect to server") from e
     finally:
         _close_socket(client)

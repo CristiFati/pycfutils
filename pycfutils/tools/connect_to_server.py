@@ -20,7 +20,7 @@ def parse_args(*argv):
         "--attempt_timeout",
         "-t",
         default=1,
-        type=int,
+        type=float,
         help="wait time for each attempt",
     )
     parser.add_argument(
@@ -49,7 +49,7 @@ def main(*argv):
     args, _ = parse_args()
     print(
         f"Attempting to connect to {args.address}:{args.port} (family: {args.family})"
-        f" {args.attempts} times (with a {args.attempt_timeout} timeout)..."
+        f" {args.attempts} times (with a {args.attempt_timeout:.2f}s timeout)..."
     )
     start_time = time.time()
     try:
@@ -61,8 +61,13 @@ def main(*argv):
             attempt_timeout=args.attempt_timeout,
         )
     except NetworkException as e:
-        print(e)
-    print(f"Stopped after {time.time() - start_time:.3f} seconds")
+        print(f"  FAILURE ({e}) (took {time.time() - start_time:.3f} seconds)")
+        return 1
+    else:
+        print(
+            f"  --- !!! SUCCESS !!! --- (took {time.time() - start_time:.3f} seconds)"
+        )
+        return 0
 
 
 if __name__ == "__main__":

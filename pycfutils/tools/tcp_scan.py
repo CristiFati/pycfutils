@@ -41,7 +41,7 @@ def parse_args(*argv):
 
     args, unk = parser.parse_known_args()
     if unk:
-        print("Warning: Ignoring unknown arguments: {:}".format(unk))
+        print(f"Warning: Ignoring unknown arguments: {unk}")
 
     if args.timeout < 0:
         parser.exit(status=-1, message="Timeout can't be negative\n")

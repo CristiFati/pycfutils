@@ -7,8 +7,8 @@ from os.path import dirname
 from typing import AnyStr, Union
 
 __all__ = (
-    "path_ancestor",
     "cpu_stress",
+    "path_ancestor",
 )
 
 

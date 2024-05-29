@@ -88,13 +88,13 @@ def to_string(
 
 
 if _CLS_CDATA:
-    __all__ += (
-        "Structure",
-        "Union",
+    __all__ = (
         # "Array",
         "BigEndianStructure",
         "LittleEndianStructure",
-    )
+        "Structure",
+        "Union",
+    ) + __all__
 
     class Structure(ctypes.Structure):
         to_string = to_string

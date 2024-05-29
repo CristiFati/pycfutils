@@ -28,25 +28,6 @@ def int_format(limit: int) -> str:
     return f"{{:0{math.ceil(math.log10(max(abs(limit), 2))) + sgn:d}d}}"
 
 
-def progression(
-    ratio: Numeric,
-    first: Numeric = 1,
-    count: int = 16,
-    op: Callable[[Numeric, Numeric], Numeric] = operator.mul,
-    stop_function: Optional[Callable[[Numeric], bool]] = None,
-) -> Iterator[Numeric]:
-    idx = 0
-    val = float(first) if isinstance(ratio, float) else first
-    while True:
-        yield val
-        val = op(val, ratio)
-        idx += 1
-        if 0 < count <= idx:
-            break
-        if stop_function is not None and stop_function(val):
-            break
-
-
 def timestamp_string(
     timestamp: Union[None, int, float, Sequence] = None,
     human_readable: bool = False,
@@ -78,6 +59,25 @@ def uniques(sequence: Sequence) -> Sequence:
             ret.append(e)
             handled.add(e)
     return ret if isinstance(sequence, list) else tuple(ret)
+
+
+def progression(
+    ratio: Numeric,
+    first: Numeric = 1,
+    count: int = 16,
+    op: Callable[[Numeric, Numeric], Numeric] = operator.mul,
+    stop_function: Optional[Callable[[Numeric], bool]] = None,
+) -> Iterator[Numeric]:
+    idx = 0
+    val = float(first) if isinstance(ratio, float) else first
+    while True:
+        yield val
+        val = op(val, ratio)
+        idx += 1
+        if 0 < count <= idx:
+            break
+        if stop_function is not None and stop_function(val):
+            break
 
 
 if __name__ == "__main__":

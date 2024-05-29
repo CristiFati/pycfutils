@@ -11,8 +11,8 @@ __all__ = (
     "SOCKET_TYPES",
     # "SOCKET_TYPE_DEFAULT",
     "TCPServer",
-    "parse_address",
     "connect_to_server",
+    "parse_address",
 )
 
 SOCKET_FAMILY_IPV4 = "ipv4"

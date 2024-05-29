@@ -35,7 +35,8 @@ def main(*argv):
     args, _ = parse_args()
     print(
         f"Attempting to start {args.cpus} process(es)"
-        f" for{f' {args.time} seconds' if args.time else 'ever'}..."
+        f" for{f' {args.time} seconds' if args.time else 'ever'}.\n"
+        "Press <Ctrl + C> to interrupt...\n"
     )
     start_time = time.time()
     try:

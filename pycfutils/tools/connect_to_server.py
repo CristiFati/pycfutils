@@ -1,11 +1,17 @@
 #!/usr/bin/env python
 
 import argparse
+import socket
 import sys
 import time
 
 from pycfutils.exceptions import NetworkException
-from pycfutils.network import SOCKET_FAMILIES, connect_to_server
+from pycfutils.network import (
+    SOCKET_FAMILIES,
+    SOCKET_TYPE_TCP,
+    connect_to_server,
+    parse_address,
+)
 
 
 def parse_args(*argv):
@@ -42,26 +48,40 @@ def parse_args(*argv):
     if args.port <= 0:
         parser.exit(status=-1, message="Invalid port\n")
 
+    try:
+        record = parse_address(
+            args.address or "",
+            args.port,
+            family=args.family,
+            type_=SOCKET_TYPE_TCP,
+            exact_matches=1,
+        )[0]
+    except NetworkException as e:
+        parser.exit(status=-1, message=f"Invalid address: {e}\n")
+    args.address = record[0], record[2]
+
     return args, unk
 
 
 def main(*argv):
     args, _ = parse_args()
     print(
-        f"Attempting to connect to {args.address}:{args.port} (family: {args.family})"
+        "Attempting to connect to"
+        f" {args.address[0].join('[]') if args.address[-1] == socket.AF_INET6 else args.address[0]}"
+        f":{args.port} (family: {str(args.address[-1])})"
         f" {args.attempts} times (with a {args.attempt_timeout:.2f}s timeout)..."
     )
     start_time = time.time()
     try:
         connect_to_server(
-            args.address,
+            args.address[0],
             args.port,
             family=args.family,
             attempts=args.attempts,
             attempt_timeout=args.attempt_timeout,
         )
     except NetworkException as e:
-        print(f"  FAILURE ({e}) (took {time.time() - start_time:.3f} seconds)")
+        print(f"  FAILURE: {e} (took {time.time() - start_time:.3f} seconds)")
         return 1
     else:
         print(

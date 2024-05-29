@@ -13,7 +13,7 @@ from pycfutils.network import SOCKET_TYPE_TCP, connect_to_server, parse_address
 def _ip_string(ip: int, family: socket.AddressFamily) -> str:
     size = 16 if family == socket.AF_INET6 else 4
     addr = socket.inet_ntop(family, ip.to_bytes(length=size, byteorder="big"))
-    return addr.join(("[", "]")) if family == socket.AF_INET6 else addr
+    return addr.join("[]") if family == socket.AF_INET6 else addr
 
 
 def parse_args(*argv):
@@ -88,6 +88,7 @@ def main(*argv):
     fam = args.first_ip[-1]
     total, ok = 0, 0
     start_time = time.time()
+    brk = False
     for ip in range(args.first_ip[0], args.last_ip[0] + 1):
         addr = _ip_string(ip, fam)
         for port in range(args.first_port, args.last_port + 1):
@@ -104,11 +105,14 @@ def main(*argv):
                 pass
             else:
                 ok += 1
-            if read_key() is not None:
-                print("\nInterrupted by user.")
+            if read_key(timeout=0.5, poll_interval=0.1) is not None:
+                print("\nInterrupted by user")
+                brk = True
                 break
+        if brk:
+            break
     print(
-        f"Attempted {total} ({ok} successful) connection(s) in {time.time() - start_time:.3f} seconds"
+        f"\nAttempted {total} ({ok} successful) connection(s) in {time.time() - start_time:.3f} seconds"
     )
 
 

@@ -1,6 +1,10 @@
+import contextlib
 import operator
+import time
 import unittest
 from datetime import datetime
+from io import StringIO
+from unittest import mock
 
 from pycfutils import miscellaneous
 
@@ -35,6 +39,28 @@ class MiscellaneousTestCase(unittest.TestCase):
         self.assertEqual(miscellaneous.int_format(100), "{:02d}")
         self.assertEqual(miscellaneous.int_format(101), "{:03d}")
 
+    def test_timestamp_string(self):
+        ts = (2024, 5, 6, 12, 34, 56)
+        self.assertEqual(
+            miscellaneous.timestamp_string(timestamp=ts, human_readable=False),
+            "20240506123456",
+        )
+        self.assertEqual(
+            miscellaneous.timestamp_string(timestamp=ts, human_readable=True),
+            "2024-05-06 12:34:56",
+        )
+        self.assertTrue(miscellaneous.timestamp_string(datetime.now()))
+
+    def test_uniques(self):
+        l0 = [1, 2, 3, 1, 4, 3, 5, 1, 1, 2, 6, 0, 0]
+        l1 = [1, 2, 3, 4, 5, 6, 0]
+        self.assertEqual(miscellaneous.uniques([]), [])
+        self.assertEqual(miscellaneous.uniques(()), ())
+        self.assertEqual(miscellaneous.uniques(range(3)), (0, 1, 2))
+        self.assertEqual(miscellaneous.uniques(l0), l1)
+        self.assertEqual(miscellaneous.uniques((e for e in l0)), tuple(l1))
+        self.assertEqual(set(miscellaneous.uniques(set(l0))), set(l0))
+
     def test_progression(self):
         self.assertEqual(list(miscellaneous.progression(2, count=3)), [1, 2, 4])
         self.assertEqual(
@@ -59,24 +85,37 @@ class MiscellaneousTestCase(unittest.TestCase):
             [0] * 9,
         )
 
-    def test_timestamp_string(self):
-        ts = (2024, 5, 6, 12, 34, 56)
-        self.assertEqual(
-            miscellaneous.timestamp_string(timestamp=ts, human_readable=False),
-            "20240506123456",
-        )
-        self.assertEqual(
-            miscellaneous.timestamp_string(timestamp=ts, human_readable=True),
-            "2024-05-06 12:34:56",
-        )
-        self.assertTrue(miscellaneous.timestamp_string(datetime.now()))
+    def test_timed_execution(self):
+        bools = (False, True)
+        sleep_val = 0.2
+        ret_val = 1618
+        suppress_stdout = 1  # @TODO - cfati: Set to 0 to visualize decorator output
+        for pt in bools:
+            for pa in bools:
+                for rt in bools:
+                    with (
+                        mock.patch("sys.stdout", new=StringIO())
+                        if suppress_stdout
+                        else contextlib.nullcontext()
+                    ):
 
-    def test_uniques(self):
-        l0 = [1, 2, 3, 1, 4, 3, 5, 1, 1, 2, 6, 0, 0]
-        l1 = [1, 2, 3, 4, 5, 6, 0]
-        self.assertEqual(miscellaneous.uniques([]), [])
-        self.assertEqual(miscellaneous.uniques(()), ())
-        self.assertEqual(miscellaneous.uniques(range(3)), (0, 1, 2))
-        self.assertEqual(miscellaneous.uniques(l0), l1)
-        self.assertEqual(miscellaneous.uniques((e for e in l0)), tuple(l1))
-        self.assertEqual(set(miscellaneous.uniques(set(l0))), set(l0))
+                        @miscellaneous.timed_execution(
+                            print_time=pt, print_arguments=pa, return_time=rt
+                        )
+                        def dummy_function0():
+                            pass
+
+                        @miscellaneous.timed_execution(
+                            print_time=pt, print_arguments=pa, return_time=rt
+                        )
+                        def dummy_function1(arg0, arg1, arg2, kw0=-3, kw1="dummy"):
+                            time.sleep(sleep_val)
+                            return ret_val
+
+                        dummy_function0()
+                        ret = dummy_function1(1, 0.5, arg2=(2, 3), kw0=55)
+                        if rt:
+                            self.assertEqual(ret[0], ret_val)
+                            self.assertGreater(0.1, abs(sleep_val - ret[1]))
+                        else:
+                            self.assertEqual(ret, ret_val)

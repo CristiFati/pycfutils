@@ -3,12 +3,13 @@ import operator
 import sys
 import time
 from datetime import datetime
-from typing import Callable, Iterator, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Iterator, Optional, Sequence, Tuple, Union
 
 __all__ = (
     "dimensions_2d",
     "int_format",
     "progression",
+    "timed_execution",
     "timestamp_string",
     "uniques",
 )
@@ -49,6 +50,44 @@ def timestamp_string(
             f"{tm[4]:02d}{time_separator}{tm[5]:02d}"
         )
     return f"{tm[0]:04d}{tm[1]:02d}{tm[2]:02d}{tm[3]:02d}{tm[4]:02d}{tm[5]:02d}"
+
+
+def _callable_string(callable_: Callable, *args: Tuple, **kwargs: Dict) -> str:
+    arg_sep = ", "
+    args_str = arg_sep.join(["{}"] * len(args)).format(*args) if args else ""
+    kwargs_str = (
+        arg_sep.join(["{}={}".format(k, v) for k, v in kwargs.items()])
+        if kwargs
+        else ""
+    )
+    return f"{callable_.__name__}({args_str}{arg_sep if args_str and kwargs_str else ''}{kwargs_str})"
+
+
+# @Decorator
+def timed_execution(
+    print_time: bool = True,
+    print_arguments: bool = False,
+    return_time: bool = False,
+) -> Callable:
+    def callable_wrapper0(callable_: Callable) -> Callable:
+        def callable_wrapper1(*args: Tuple, **kwargs: Dict) -> Any:
+            start_time = time.time()
+            ret = callable_(*args, **kwargs)
+            dt = time.time() - start_time
+            if print_time:
+                text = (
+                    _callable_string(callable_, *args, **kwargs)
+                    if print_arguments
+                    else callable_.__name__
+                )
+                print(f"Execution of {text} took {dt:.3f} seconds")
+            if return_time:
+                return ret, dt
+            return ret
+
+        return callable_wrapper1
+
+    return callable_wrapper0
 
 
 def uniques(sequence: Sequence) -> Sequence:

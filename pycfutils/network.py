@@ -62,6 +62,29 @@ _TIMEOUT_DEFAULT = 1
 SockOpts = Optional[Dict[int, Dict[int, Any]]]
 
 
+def _create_socket(
+    family: socket.AddressFamily,
+    type_: socket.SocketKind,
+    timeout: float,
+    options: SockOpts,
+) -> socket.SocketType:
+    sock = socket.socket(family=family, type=type_)
+    try:
+        if timeout <= 0:
+            sock.setblocking(False)
+        else:
+            sock.setblocking(True)
+            sock.settimeout(timeout)
+        if options:
+            for level, opts in options.items():
+                for name, value in opts.items():
+                    sock.setsockopt(level, name, value)
+    except OSError:
+        sock.close()
+        raise
+    return sock
+
+
 def _close_socket(s) -> None:
     if not isinstance(s, socket.socket):
         return
@@ -113,29 +136,6 @@ def parse_address(
                 f"Got {len(records)} records (expected {exact_matches})"
             )
         return records
-
-
-def _create_socket(
-    family: socket.AddressFamily,
-    type_: socket.SocketKind,
-    timeout: float,
-    options: SockOpts,
-) -> socket.SocketType:
-    sock = socket.socket(family=family, type=type_)
-    try:
-        if timeout <= 0:
-            sock.setblocking(False)
-        else:
-            sock.setblocking(True)
-            sock.settimeout(timeout)
-        if options:
-            for level, opts in options.items():
-                for name, value in opts.items():
-                    sock.setsockopt(level, name, value)
-    except OSError:
-        sock.close()
-        raise
-    return sock
 
 
 class _Server:

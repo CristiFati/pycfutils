@@ -47,7 +47,6 @@ def cpu_stress(duration: float, count: int = 1) -> None:
 
 # pathlib.Path.parents equivalent
 def path_ancestor(path: Union[PathLike, AnyStr], level: int = 1) -> AnyStr:
-    pass
     if level <= 0:
         return path if isinstance(path, (str, bytes)) else str(path)
     ret = dirname(path)

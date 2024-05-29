@@ -101,6 +101,7 @@ def uniques(sequence: Sequence) -> Sequence:
 
 
 def progression(
+    *,
     ratio: Numeric,
     first: Numeric = 1,
     count: int = 16,

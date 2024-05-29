@@ -64,7 +64,6 @@ def parse_args(*argv):
 
 def main(*argv):
     args, _ = parse_args()
-    print(args.address, f"{str(args.address[-1])}")
     print(
         f"Attempting to start a TCP server listening on"
         f" {args.address[0].join('[]') if args.address[-1] == socket.AF_INET6 else args.address[0]}"

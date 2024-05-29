@@ -62,26 +62,35 @@ class MiscellaneousTestCase(unittest.TestCase):
         self.assertEqual(set(miscellaneous.uniques(set(l0))), set(l0))
 
     def test_progression(self):
-        self.assertEqual(list(miscellaneous.progression(2, count=3)), [1, 2, 4])
+        self.assertEqual(list(miscellaneous.progression(ratio=2, count=3)), [1, 2, 4])
         self.assertEqual(
-            list(miscellaneous.progression(3, stop_function=lambda arg: arg > 80)),
+            list(
+                miscellaneous.progression(ratio=3, stop_function=lambda arg: arg > 80)
+            ),
             [1, 3, 9, 27],
         )
-        self.assertEqual(list(miscellaneous.progression(-2, count=4)), [1, -2, 4, -8])
+        self.assertEqual(
+            list(miscellaneous.progression(ratio=-2, count=4)), [1, -2, 4, -8]
+        )
         self.assertEqual(
             list(
                 miscellaneous.progression(
-                    -1, op=operator.add, count=0, stop_function=lambda arg: arg <= -3
+                    ratio=-1,
+                    op=operator.add,
+                    count=0,
+                    stop_function=lambda arg: arg <= -3,
                 )
             ),
             [1, 0, -1, -2],
         )
         self.assertEqual(
-            list(miscellaneous.progression(0.5, first=0, count=4, op=operator.add)),
+            list(
+                miscellaneous.progression(ratio=0.5, first=0, count=4, op=operator.add)
+            ),
             [0.0, 0.5, 1, 1.5],
         )
         self.assertEqual(
-            list(miscellaneous.progression(0, first=0, count=9, op=operator.add)),
+            list(miscellaneous.progression(ratio=0, first=0, count=9, op=operator.add)),
             [0] * 9,
         )
 
@@ -113,7 +122,7 @@ class MiscellaneousTestCase(unittest.TestCase):
                             return ret_val
 
                         dummy_function0()
-                        ret = dummy_function1(1, 0.5, arg2=(2, 3), kw0=55)
+                        ret = dummy_function1({b"1": 2}, 0.5, arg2=(2, "3", []), kw0=55)
                         if rt:
                             self.assertEqual(ret[0], ret_val)
                             self.assertGreater(0.1, abs(sleep_val - ret[1]))

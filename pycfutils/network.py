@@ -273,15 +273,9 @@ def connect_to_server(
     client = None
     try:
         client = _create_socket(family, type_, attempt_timeout, options)
-        res = None
         for _ in range(attempts):
-            res = client.connect_ex((address, port))
-            if res == 0:
-                return client.getsockname()
-        else:
-            raise NetworkException(f"Error connecting: {res}")
-    except NetworkException:
-        raise
+            client.connect((address, port))
+            return client.getsockname()
     except OSError as e:
         raise NetworkException("Could not connect to server") from e
     finally:

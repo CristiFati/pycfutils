@@ -166,7 +166,8 @@ class _Server:
         try:
             self.socket = _create_socket(family, self.type, 0, options)
             self.socket.bind((address, port))
-            self.socket.listen(backlog)
+            if self.type in (socket.SOCK_STREAM, socket.SOCK_SEQPACKET):
+                self.socket.listen(backlog)
         except OSError as e:
             self.close()
             raise NetworkException("Error creating server") from e

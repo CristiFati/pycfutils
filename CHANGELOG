@@ -44,6 +44,16 @@ C         H         A         N        G        E         L         O         G
 
 
 [TBR]
+    - Various fixes and improvements
+      @CristiFati, 240530
+    - Timed function decorator
+      @CristiFati, 240529
+    - TCP server script
+      @CristiFati, 240529
+    - Progression
+      @CristiFati, 240529
+    - IPv6 TCP scan
+      @CristiFati, 240528
 
 [2024.05.27]
     - Windows hook mechanism improvement

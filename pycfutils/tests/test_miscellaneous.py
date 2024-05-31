@@ -54,12 +54,11 @@ class MiscellaneousTestCase(unittest.TestCase):
     def test_uniques(self):
         l0 = [1, 2, 3, 1, 4, 3, 5, 1, 1, 2, 6, 0, 0]
         l1 = [1, 2, 3, 4, 5, 6, 0]
-        self.assertEqual(miscellaneous.uniques([]), [])
-        self.assertEqual(miscellaneous.uniques(()), ())
-        self.assertEqual(miscellaneous.uniques(range(3)), (0, 1, 2))
-        self.assertEqual(miscellaneous.uniques(l0), l1)
-        self.assertEqual(miscellaneous.uniques((e for e in l0)), tuple(l1))
-        self.assertEqual(set(miscellaneous.uniques(set(l0))), set(l0))
+        self.assertEqual(list(miscellaneous.uniques([])), [])
+        self.assertEqual(tuple(miscellaneous.uniques(range(3))), (0, 1, 2))
+        self.assertEqual(list(miscellaneous.uniques(l0)), l1)
+        self.assertEqual(list(miscellaneous.uniques(l0)), l1)
+        self.assertEqual(list(miscellaneous.uniques(e for e in l0)), l1)
 
     def test_progression(self):
         self.assertEqual(list(miscellaneous.progression(ratio=2, count=3)), [1, 2, 4])

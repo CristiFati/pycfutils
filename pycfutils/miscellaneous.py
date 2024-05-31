@@ -3,7 +3,7 @@ import operator
 import sys
 import time
 from datetime import datetime
-from typing import Any, Callable, Dict, Iterator, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Tuple, Union
 
 __all__ = (
     "dimensions_2d",
@@ -30,7 +30,7 @@ def int_format(limit: int) -> str:
 
 
 def timestamp_string(
-    timestamp: Union[None, int, float, Sequence] = None,
+    timestamp: Union[None, Sequence, datetime, int, float] = None,
     human_readable: bool = False,
     date_separator: str = "-",
     time_separator: str = ":",
@@ -90,14 +90,12 @@ def timed_execution(
     return callable_wrapper0
 
 
-def uniques(sequence: Sequence) -> Sequence:
-    ret = []
+def uniques(sequence: Iterable[Any]) -> Iterable[Any]:
     handled = set()
     for e in sequence:
         if e not in handled:
-            ret.append(e)
             handled.add(e)
-    return ret if isinstance(sequence, list) else tuple(ret)
+            yield e
 
 
 def progression(
@@ -107,7 +105,7 @@ def progression(
     count: int = 16,
     op: Callable[[Numeric, Numeric], Numeric] = operator.mul,
     stop_function: Optional[Callable[[Numeric], bool]] = None,
-) -> Iterator[Numeric]:
+) -> Iterable[Numeric]:
     idx = 0
     val = float(first) if isinstance(ratio, float) else first
     while True:

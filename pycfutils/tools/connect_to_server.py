@@ -20,7 +20,7 @@ def parse_args(*argv):
         "--address",
         "-a",
         default="",
-        help="address to connect to",
+        help="address to connect to (must resolve to exactly one IP)",
     )
     parser.add_argument(
         "--attempt_timeout",

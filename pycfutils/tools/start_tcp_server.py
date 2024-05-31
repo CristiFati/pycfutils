@@ -16,7 +16,7 @@ def parse_args(*argv):
         "--address",
         "-a",
         default="",
-        help="address to listen on",
+        help="address to listen on (must resolve to exactly one IP)",
     )
     parser.add_argument(
         "--family",

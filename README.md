@@ -74,14 +74,14 @@ Also, there are some useful (CLI wrapper) scripts **in the *tools* folder**. Che
     for /f %g in ('dir /b /a-d /a-l "pycfutils\tools\*.py"') do (python "pycfutils\tools\%g" -h)
     ```
 
-Or run them as modules (e.g. in 2 separate terminals):
+Or run them as modules (e.g. in 2 separate terminals). Example (*Shell* snippets that also work in *Batch*):
 
 - Terminal 1:
 
     ```shell
     python -m pycfutils.tools.connect_to_server -a 127.0.0.1 -p 16180
 
-    # Go to the other terminal and run the other command, then come back and re-run the previous command
+    # Go to the other terminal and run the other command (start the server), then come back and re-run the previous command
 
     python -m pycfutils.tools.connect_to_server -a 127.0.0.1 -p 16180
     ```
@@ -89,5 +89,5 @@ Or run them as modules (e.g. in 2 separate terminals):
 - Terminal 2:
 
     ```shell
-    python -m pycfutils.tools.start_tcp_server -a 127.0.0.1 -p 16180
+    python -m pycfutils.tools.start_server -a 127.0.0.1 -p 16180
     ```

@@ -46,6 +46,8 @@ C         H         A         N        G        E         L         O         G
 [TBR]
 
 [2024.06.05]
+    - Add .lib file to .whl (Win)
+      @CristiFati, 240605
     - Tool renames and improvements
       @CristiFati, 240602
     - Various fixes and improvements

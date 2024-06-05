@@ -8,6 +8,7 @@ especially due to the workarounds (some quite lame) done to build the .dll.
 import glob
 import importlib.util
 import os
+import shutil
 import sys
 
 from setuptools import find_packages, setup
@@ -28,11 +29,14 @@ else:
     _SUF = "nix"
 
 _INCLUDE_DIR = f"include/{_NAME}"
-_INCLUDE_FILES = (f"{_INCLUDE_DIR}/cinterface.h",)
+_CINTERFACE = "cinterface"
+_INCLUDE_FILES = (f"{_INCLUDE_DIR}/{_CINTERFACE}.h",)
 _SOURCE_FILES = [
     e.replace("\\", "/")
-    for e in glob.glob(os.path.join(_NAME, "src", f"cinterface_*.cpp"))
+    for e in glob.glob(os.path.join(_NAME, "src", f"{_CINTERFACE}*.cpp"))
 ]
+_LIBS_DIR = "libs"
+_LIB_FILES = (f"{_LIBS_DIR}/lib{_CINTERFACE}.lib",)
 _VS_FILES = tuple(
     f"vs/{e}"
     for e in (
@@ -50,10 +54,35 @@ def version():
     return mod.__version__
 
 
-# @TODO - cfati (gainarie): Get rid of sysconfig's EXT_SUFFIX (e.g.: .cp310-win_amd64)
+# @TODO - cfati (gainarie): Get rid of sysconfig's EXT_SUFFIX (e.g.: .cp310-win_amd64), and include .lib file
 class BuildDll(build_ext):
     def get_ext_filename(self, ext_name):
         return os.path.join(*ext_name.split(".")) + _EXT
+
+    if _IS_WIN:
+
+        def get_lib_files(self):
+            ret = []
+            for e in self.get_outputs():
+                file = e.replace(self.build_lib, self.build_temp).replace(_EXT, ".lib")
+                file = os.path.join(
+                    os.path.dirname(file), "src", os.path.basename(file)
+                )
+                if os.path.exists(file):
+                    ret.append(file)
+            return ret
+
+        def run(self):
+            ret = super().run()
+            libs = self.get_lib_files()
+            if libs:
+                libs_dir = os.path.join(self.build_lib, _NAME, _LIBS_DIR)
+                if os.path.isdir(libs_dir):
+                    shutil.rmtree(libs_dir)
+                os.makedirs(libs_dir)
+                for e in libs:
+                    self.copy_file(e, libs_dir)
+            return ret
 
 
 # @TODO - cfati (gainarie): Create generic .whl as the .dll doesn't depend on Python
@@ -106,7 +135,7 @@ class SDist(sdist):
 
 
 c_interface_dll = Library(
-    (_NAME + ".libcinterface"),
+    (_NAME + f".lib{_CINTERFACE}"),
     sources=_SOURCE_FILES,
     include_dirs=[f"{_NAME}/include"],
     define_macros=[
@@ -123,6 +152,7 @@ c_interface_dll = Library(
         "kernel32",
     ],
 )
+
 
 setup_args = dict(
     name=_NAME,
@@ -156,7 +186,7 @@ setup_args = dict(
     download_url=f"https://pypi.org/project/{_NAME}",
     packages=find_packages(
         include=(
-            f"{_NAME}",
+            _NAME,
             f"{_NAME}.gstreamer",
             f"{_NAME}.gui",
             f"{_NAME}.tests",
@@ -164,9 +194,7 @@ setup_args = dict(
         ),
         exclude=("src", "__pycache__"),
     ),
-    package_data={
-        f"{_NAME}": _INCLUDE_FILES if _IS_WIN else (),
-    },
+    package_data={_NAME: _INCLUDE_FILES + _LIB_FILES} if _IS_WIN else {},
     cmdclass={
         "build_ext": BuildDll,
         "bdist_wheel": BDistWheelDll,

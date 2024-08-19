@@ -3,11 +3,13 @@ import operator
 import sys
 import time
 from datetime import datetime
+from pprint import pprint
 from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Tuple, Union
 
 __all__ = (
     "dimensions_2d",
     "int_format",
+    "pretty_print",
     "progression",
     "timed_execution",
     "timestamp_string",
@@ -116,6 +118,12 @@ def progression(
             break
         if stop_function is not None and stop_function(val):
             break
+
+
+def pretty_print(obj, head=None, indent=2, sort_dicts=False):
+    if head is not None:
+        print(head)
+    pprint(obj, indent=indent, sort_dicts=sort_dicts)
 
 
 if __name__ == "__main__":

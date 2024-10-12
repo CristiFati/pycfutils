@@ -58,7 +58,33 @@ import pycfutils.gui
 print(pycfutils.gui.message_box("Title", "Text to display", x=320, y=200))
 ```
 
-Also, there are some useful (CLI wrapper) scripts **in the *tools* folder**. Check them:
+#### Functionality to build a *\*.dll* (*\*.so*) with *SetupTools*. Parts of *setup.py*:
+
+```python
+from setuptools import setup
+
+from pycfutils.setup.command.build_clibdll import build_clibdll
+
+dll = (
+    "dll_name",
+    {
+        "dll": True,  # False (or nothing) for regular (static) library
+        # ...
+    },
+)
+
+
+setup(
+    # ...
+    cmdclass={
+        "build_clib": build_clibdll,
+    },
+    libraries=[dll],
+    # ...
+)
+```
+
+#### There are also some useful (*CLI* wrapper) scripts in the *tools* folder. Example:
 
 - *Nix*:
 

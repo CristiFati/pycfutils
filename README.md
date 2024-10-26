@@ -64,6 +64,7 @@ print(pycfutils.gui.message_box("Title", "Text to display", x=320, y=200))
 from setuptools import setup
 
 from pycfutils.setup.command.build_clibdll import build_clibdll
+from pycfutils.setup.command.install_platlib import install_platlib  # Optional
 
 dll = (
     "dll_name",
@@ -78,6 +79,7 @@ setup(
     # ...
     cmdclass={
         "build_clib": build_clibdll,
+        "install": install_platlib,
     },
     libraries=[dll],
     # ...

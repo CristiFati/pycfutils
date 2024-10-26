@@ -162,6 +162,7 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
         time.sleep(1)
         for srv in srvs:
             srv.stop()
+            srv.close()
 
     def test_connect_to_server(self):
         self.assertRaises(

@@ -46,6 +46,8 @@ C         H         A         N        G        E         L         O         G
 [TBR]
 
 [2024.10.26]
+    - Various fixes and improvements
+      @CristiFati, 241026
     - Integrate new functionality into the build
       @CristiFati, 241026
     - Add SetupTools functionality to build a .dll

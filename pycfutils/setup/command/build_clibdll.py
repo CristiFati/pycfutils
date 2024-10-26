@@ -1,8 +1,15 @@
 import os
 import shutil
 import sys
-from distutils import log
-from distutils.errors import DistutilsSetupError
+
+try:
+    from distutils import log
+    from distutils.errors import DistutilsSetupError
+except ImportError:  # v3.12+
+    import setuptools
+
+    log = setuptools.distutils.log
+    DistutilsSetupError = setuptools.distutils.errors.DistutilsSetupError
 
 from setuptools.command.build_clib import build_clib
 

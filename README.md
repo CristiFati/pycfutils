@@ -69,13 +69,19 @@ from pycfutils.setup.command.install_platlib import install_platlib  # Optional
 dll = (
     "dll_name",
     {
+        "sources": ["src0.c", "src1.c", ],
+        # ...
         "dll": True,  # False (or nothing) for regular (static) library
+        "copy_files": {  # Optional (copy artifacts)
+            "dll_name.so": "pkg_name",  #  dll_name.dll on Win
+        }
         # ...
     },
 )
 
 
 setup(
+    name="pkg_name",
     # ...
     cmdclass={
         "build_clib": build_clibdll,

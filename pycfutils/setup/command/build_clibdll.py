@@ -8,7 +8,7 @@ try:
 except ImportError:  # v3.12+
     import setuptools
 
-    log = setuptools.distutils.log
+    log = setuptools.distutils._log
     DistutilsSetupError = setuptools.distutils.errors.DistutilsSetupError
 
 from setuptools.command.build_clib import build_clib
@@ -27,16 +27,11 @@ class BuildCLibDll(build_clib):
 
     dll_ext = ".dll" if _IS_WIN else ".so"
 
-    def initialize_options(self):
-        super().initialize_options()
-        self.copy_path_prefix = ""
-
-    def set_copy_path_prefix(self, prefix):
-        self.copy_path_prefix = prefix
-
-    # @TODO - cfati: override method from distutils.command.build_clib.build_clib
-    # It's actually copy / paste, the only differences are `if build_info.get("dll"): ...` and `copy_files`
-    # Would be nicer to refactor directly in distutils
+    # @TODO - cfati: Override method from distutils.command.build_clib.build_clib
+    # It's actually copy / paste, the differences are:
+    #   - `if build_info.get("dll"):` ...
+    #   - `for src_base, dst_path in build_info.get("copy_files", {}).items():` ...
+    # Would be nicer to refactor directly in distutils / setuptools
     def build_libraries(self, libraries):
         for lib_name, build_info in libraries:
             sources = build_info.get("sources")
@@ -134,11 +129,13 @@ class BuildCLibDll(build_clib):
                     output_dir=self.build_clib,
                     debug=self.debug,
                 )
+            build_py_cmd = self.get_finalized_command("build_py", create=False)
+            path_prefix = build_py_cmd.build_lib if build_py_cmd else ""
             for src_base, dst_path in build_info.get("copy_files", {}).items():
                 src_file = os.path.join(self.build_clib, src_base)
                 if os.path.isfile(src_file):
-                    if self.copy_path_prefix:
-                        dst_path = os.path.join(self.copy_path_prefix, dst_path)
+                    if path_prefix:
+                        dst_path = os.path.join(path_prefix, dst_path)
                     os.makedirs(dst_path, exist_ok=True)
                     shutil.copyfile(
                         src_file, os.path.join(dst_path, os.path.basename(src_file))

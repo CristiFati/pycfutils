@@ -38,7 +38,7 @@ if [ -z "${NO_TEST}" ]; then
         python -m pip uninstall -y pycfutils
         python -m pip -v install --no-index -f "${TEST_WHEEL_DIR}" pycfutils
         python -m unittest discover -s "${VIRTUAL_ENV}/lib/python$(python -c "import sys;print(f'{sys.version_info.major}.{sys.version_info.minor}')")/site-packages/pycfutils/tests"
-        python -c "import pycfutils.gui as pg, pycfutils.io as pio;print('Press a key: ', pio.read_key(1))"
+        python -c "import pycfutils.gui as pg, pycfutils.io as pio, pycfutils.setup.command.build_clibdll as pscbcd;print('Press a key: ', pio.read_key(1))"
         python -m pip uninstall -y pycfutils
         deactivate
     done

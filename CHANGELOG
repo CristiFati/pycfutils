@@ -45,6 +45,12 @@ C         H         A         N        G        E         L         O         G
 
 [TBR]
 
+[2024.10.26]
+    - Integrate new functionality into the build
+      @CristiFati, 241026
+    - Add SetupTools functionality to build a .dll
+      @CristiFati, 241013
+
 [2024.06.05]
     - Add .lib file to .whl (Win)
       @CristiFati, 240605

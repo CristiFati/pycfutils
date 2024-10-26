@@ -8,14 +8,14 @@ especially due to the workarounds (some quite lame) done to build the .dll.
 import glob
 import importlib.util
 import os
-import shutil
 import sys
 
 from setuptools import find_packages, setup
-from setuptools.command.build_ext import build_ext
-from setuptools.command.sdist import sdist
-from setuptools.extension import Library
-from wheel.bdist_wheel import bdist_wheel
+from setuptools.command.sdist import sdist as sdist_orig
+from wheel.bdist_wheel import bdist_wheel as bdist_wheel_orig
+
+from pycfutils.setup.command.build_clibdll import build_clibdll
+from pycfutils.setup.command.install_platlib import install_platlib
 
 _IS_WIN = sys.platform[:3].lower() == "win"
 
@@ -35,8 +35,12 @@ _SOURCE_FILES = [
     e.replace("\\", "/")
     for e in glob.glob(os.path.join(_NAME, "src", f"{_CINTERFACE}*.cpp"))
 ]
+_CINTERFACE_OUT_FILE_STEM = f"lib{_CINTERFACE}"
 _LIBS_DIR = "libs"
-_LIB_FILES = (f"{_LIBS_DIR}/lib{_CINTERFACE}.lib",)
+_CINTERFACE_DLL_FILE_BASE = f"{_CINTERFACE_OUT_FILE_STEM}{_EXT}"
+_CINTERFACE_DLL_FILE = _CINTERFACE_DLL_FILE_BASE
+_CINTERFACE_LIB_FILE_BASE = f"{_CINTERFACE_OUT_FILE_STEM}.lib"
+_CINTERFACE_LIB_FILE = f"{_LIBS_DIR}/{_CINTERFACE_LIB_FILE_BASE}"
 _VS_FILES = tuple(
     f"vs/{e}"
     for e in (
@@ -45,6 +49,7 @@ _VS_FILES = tuple(
         "vs.sln",
     )
 )
+_TOOL_FILES = tuple(f"_utils/{e}" for e in ("nix.sh", "win.bat"))
 
 
 def version():
@@ -54,39 +59,8 @@ def version():
     return mod.__version__
 
 
-# @TODO - cfati (gainarie): Get rid of sysconfig's EXT_SUFFIX (e.g.: .cp310-win_amd64), and include .lib file
-class BuildDll(build_ext):
-    def get_ext_filename(self, ext_name):
-        return os.path.join(*ext_name.split(".")) + _EXT
-
-    if _IS_WIN:
-
-        def get_lib_files(self):
-            ret = []
-            for e in self.get_outputs():
-                file = e.replace(self.build_lib, self.build_temp).replace(_EXT, ".lib")
-                file = os.path.join(
-                    os.path.dirname(file), "src", os.path.basename(file)
-                )
-                if os.path.exists(file):
-                    ret.append(file)
-            return ret
-
-        def run(self):
-            ret = super().run()
-            libs = self.get_lib_files()
-            if libs:
-                libs_dir = os.path.join(self.build_lib, _NAME, _LIBS_DIR)
-                if os.path.isdir(libs_dir):
-                    shutil.rmtree(libs_dir)
-                os.makedirs(libs_dir)
-                for e in libs:
-                    self.copy_file(e, libs_dir)
-            return ret
-
-
 # @TODO - cfati (gainarie): Create generic .whl as the .dll doesn't depend on Python
-class BDistWheelDll(bdist_wheel):
+class BDistWheelDll(bdist_wheel_orig):
     def get_tag(self):
         if _IS_WIN:
             plat = self.plat_name.replace("-", "_").replace(".", "_").replace(" ", "_")
@@ -100,24 +74,22 @@ class BDistWheelDll(bdist_wheel):
 
 
 # @TODO - cfati (gainarie): Manually add files in the source distribution (built on Nix)
-class SDist(sdist):
+class SDist(sdist_orig):
     @staticmethod
     def _extra_files():
         ret = ["CHANGELOG"]
-        ret.extend(_VS_FILES)
-        ret.extend((os.path.join("_utils", e) for e in ("nix.sh", "win.bat")))
-        if _IS_WIN:
-            return ret
-        ret.extend((os.path.join(_NAME, e) for e in _INCLUDE_FILES))
+        ret.extend(f"{_NAME}/{e}" for e in _INCLUDE_FILES)
         ret.extend(_SOURCE_FILES)
+        ret.extend(_VS_FILES)
+        ret.extend(_TOOL_FILES)
         return ret
 
-    def _adjust_sources(self):
+    def _adjust_sources(self, extra_files):
         ei_cmd = super().get_finalized_command("egg_info")
         manifest = os.path.join(ei_cmd.egg_info, "SOURCES.txt")
         existing = [e.rstrip() for e in open(manifest).readlines()]
         modified = False
-        for file in self._extra_files():
+        for file in extra_files:
             if file not in existing:
                 modified = True
                 existing.append(file)
@@ -130,27 +102,38 @@ class SDist(sdist):
         extra = self._extra_files()
         if extra:
             cmd.filelist.files.extend(extra)
-            self._adjust_sources()
+            self._adjust_sources(extra)
         return cmd
 
 
-c_interface_dll = Library(
-    (_NAME + f".lib{_CINTERFACE}"),
-    sources=_SOURCE_FILES,
-    include_dirs=[f"{_NAME}/include"],
-    define_macros=[
-        ("UNICODE", None),
-        ("_UNICODE", None),
-        ("WIN32", None),
-        ("_WINDLL", None),
-    ],
-    extra_link_args=[
-        "/DLL",
-    ],
-    libraries=[
-        "user32",
-        "kernel32",
-    ],
+bdist_wheel_dll = BDistWheelDll
+sdist = SDist
+
+
+c_interface_dll = (
+    _CINTERFACE_OUT_FILE_STEM,
+    {
+        "dll": True,
+        "copy_files": (
+            {
+                _CINTERFACE_DLL_FILE_BASE: _NAME,
+                _CINTERFACE_LIB_FILE_BASE: f"{_NAME}/{_LIBS_DIR}",
+            }
+            if _IS_WIN
+            else {
+                _CINTERFACE_DLL_FILE_BASE: _NAME,
+            }
+        ),
+        "sources": _SOURCE_FILES,
+        "include_dirs": (f"{_NAME}/include",),
+        "define_macros": (
+            ("UNICODE", None),
+            ("_UNICODE", None),
+            ("WIN32", None),
+            ("_WINDLL", None),
+        ),
+        "libraries": ("user32",),
+    },
 )
 
 
@@ -196,13 +179,20 @@ setup_args = dict(
         ),
         exclude=("src", "__pycache__"),
     ),
-    package_data={_NAME: _INCLUDE_FILES + _LIB_FILES} if _IS_WIN else {},
-    cmdclass={
-        "build_ext": BuildDll,
-        "bdist_wheel": BDistWheelDll,
-        "sdist": SDist,
-    },
-    ext_modules=[c_interface_dll] if _IS_WIN else [],
+    package_data={_NAME: _INCLUDE_FILES} if _IS_WIN else {},
+    cmdclass=(
+        {
+            "build_clib": build_clibdll,
+            "install": install_platlib,
+            "bdist_wheel": bdist_wheel_dll,
+            "sdist": sdist,
+        }
+        if _IS_WIN
+        else {
+            "sdist": sdist,
+        }
+    ),
+    libraries=[c_interface_dll] if _IS_WIN else [],
 )
 
 setup(**setup_args)

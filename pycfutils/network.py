@@ -178,12 +178,10 @@ class _Server:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.stop()
         self.close()
         return exc_type is None
 
     def __del__(self) -> None:
-        self.stop()
         self.close()
 
     def start(self) -> bool:
@@ -219,6 +217,7 @@ class _Server:
                 self.handled_total += 1
 
     def close(self) -> None:
+        self.stop()
         _close_socket(self.socket)
         self.socket = None
 

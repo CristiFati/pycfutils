@@ -22,7 +22,7 @@ class RegistryAccess:
     def __init__(self):
         if not Gst.is_initialized():
             print("Gst engine is not initialized. Initializing.")
-            Gst.init()
+            Gst.init(argv=None)
         self.__contents = None
         self.__element_classes_dict = None
         self.__element_classes = None
@@ -98,7 +98,7 @@ if __name__ == "__main__":
             sys.platform,
         )
     )
-    Gst.init()
+    Gst.init(argv=None)
     ra = RegistryAccess()
     print("\nGst registry contents:")
     contents = ra.contents()

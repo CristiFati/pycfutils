@@ -23,7 +23,7 @@ class GStreamerTestCase(unittest.TestCase):
                     return False
 
                 @staticmethod
-                def init():
+                def init(argv=None):
                     pass
 
             print("PyGObject not installed. Run dummy test")

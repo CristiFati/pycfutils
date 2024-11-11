@@ -139,6 +139,10 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
         )
         with network.TCPServer(self.lh4, self.port):
             time.sleep(0.5)
+        with network.TCPServer(self.lh4, self.port) as srv:
+            time.sleep(0.5)
+            srv.close()
+            self.assertFalse(srv.start())
         with network.TCPServer(
             self.lh, self.port, family=network.SOCKET_FAMILY_IPV4, poll_timeout=0
         ):
@@ -194,6 +198,23 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
                 self.lh4,
                 self.port,
                 {"attempt_timeout": 0},
+            )
+            srv.stop()
+            self.assertEqual(
+                network.connect_to_server(self.lh4, self.port, attempt_timeout=0.5)[0],
+                self.lh4,
+            )
+            srv.start()
+            self.assertEqual(
+                network.connect_to_server(self.lh4, self.port, attempt_timeout=0.5)[0],
+                self.lh4,
+            )
+            srv.close()
+            self.assertRaises(
+                network.NetworkException,
+                network.connect_to_server,
+                self.lh4,
+                self.port,
             )
         time.sleep(0.1)
         self.assertRaises(

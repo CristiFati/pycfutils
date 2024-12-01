@@ -6,16 +6,6 @@ from datetime import datetime
 from pprint import pprint
 from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Tuple, Union
 
-__all__ = (
-    "dimensions_2d",
-    "int_format",
-    "pretty_print",
-    "progression",
-    "timed_execution",
-    "timestamp_string",
-    "uniques",
-)
-
 Numeric = Union[int, float]
 
 
@@ -124,6 +114,17 @@ def pretty_print(obj, head=None, indent=2, sort_dicts=False):
     if head is not None:
         print(head)
     pprint(obj, indent=indent, sort_dicts=sort_dicts)
+
+
+__all__ = (
+    "dimensions_2d",
+    "int_format",
+    "pretty_print",
+    "progression",
+    "timed_execution",
+    "timestamp_string",
+    "uniques",
+)
 
 
 if __name__ == "__main__":

@@ -7,8 +7,6 @@ try:
 except Exception:
     _CLS_CDATA = None
 
-__all__ = ("to_string",)
-
 
 def _to_string(
     c_object: Any,
@@ -88,13 +86,6 @@ def to_string(
 
 
 if _CLS_CDATA:
-    __all__ = (
-        # "Array",
-        "BigEndianStructure",
-        "LittleEndianStructure",
-        "Structure",
-        "Union",
-    ) + __all__
 
     class Structure(ctypes.Structure):
         to_string = to_string
@@ -110,6 +101,18 @@ if _CLS_CDATA:
 
     class LittleEndianStructure(ctypes.LittleEndianStructure):
         to_string = to_string
+
+    __all__ = (
+        # "Array",
+        "BigEndianStructure",
+        "LittleEndianStructure",
+        "Structure",
+        "Union",
+    )
+else:
+    __all__ = ()
+
+__all__ += ("to_string",)
 
 
 if __name__ == "__main__":

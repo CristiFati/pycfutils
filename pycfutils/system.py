@@ -6,12 +6,6 @@ from os import PathLike
 from os.path import dirname
 from typing import AnyStr, Union
 
-__all__ = (
-    "cpu_stress",
-    "path_ancestor",
-)
-
-
 # CPU
 
 _CPU_BATCH_CYCLES = 25000000
@@ -57,6 +51,12 @@ def path_ancestor(path: Union[PathLike, AnyStr], level: int = 1) -> AnyStr:
             break
         level -= 1
     return ret
+
+
+__all__ = (
+    "cpu_stress",
+    "path_ancestor",
+)
 
 
 if __name__ == "__main__":

@@ -1,19 +1,10 @@
 import select
 import socket
+import sys
 import threading
 from typing import Any, AnyStr, Dict, Optional, Tuple
 
 from pycfutils.exceptions import NetworkException
-
-__all__ = (
-    "SOCKET_FAMILIES",
-    # "SOCKET_FAMILY_DEFAULT",
-    "SOCKET_TYPES",
-    # "SOCKET_TYPE_DEFAULT",
-    "TCPServer",
-    "connect_to_server",
-    "parse_address",
-)
 
 SOCKET_FAMILY_IPV4 = "ipv4"
 SOCKET_FAMILY_IPV6 = "ipv6"
@@ -24,14 +15,8 @@ _SocketFamilyMap = {
     # SOCKET_FAMILY_UNIX: socket.AF_UNIX,
     # SOCKET_FAMILY_UNSPEC: socket.AF_UNSPEC,
 }
-__all__ += (
-    "SOCKET_FAMILY_IPV4",
-    # "SOCKET_FAMILY_UNIX",
-    # "SOCKET_FAMILY_UNSPEC",
-)
 if socket.has_ipv6:
     _SocketFamilyMap[SOCKET_FAMILY_IPV6] = socket.AF_INET6
-    __all__ += ("SOCKET_FAMILY_IPV6",)
 SOCKET_FAMILIES = tuple(_SocketFamilyMap.keys())
 SOCKET_FAMILY_DEFAULT = SOCKET_FAMILY_IPV4
 if SOCKET_FAMILY_DEFAULT not in SOCKET_FAMILIES:
@@ -45,11 +30,6 @@ _SocketTypeMap = {
     SOCKET_TYPE_UDP: socket.SOCK_DGRAM,
     # SOCKET_TYPE_RAW: socket.SOCK_RAW,
 }
-__all__ += (
-    "SOCKET_TYPE_TCP",
-    "SOCKET_TYPE_UDP",
-    # "SOCKET_TYPE_RAW",
-)
 SOCKET_TYPES = tuple(_SocketTypeMap.keys())
 SOCKET_TYPE_DEFAULT = SOCKET_TYPE_TCP
 if SOCKET_TYPE_DEFAULT not in SOCKET_TYPES:
@@ -280,3 +260,31 @@ def connect_to_server(
         raise NetworkException("Could not connect to server") from e
     finally:
         _close_socket(client)
+
+
+__all__ = (
+    "SOCKET_FAMILIES",
+    # "SOCKET_FAMILY_DEFAULT",
+    "SOCKET_FAMILY_IPV4",
+    # "SOCKET_FAMILY_UNIX",
+    # "SOCKET_FAMILY_UNSPEC",
+)
+if socket.has_ipv6:
+    __all__ += ("SOCKET_FAMILY_IPV6",)
+__all__ += (
+    "SOCKET_TYPES",
+    # "SOCKET_TYPE_DEFAULT",
+    "SOCKET_TYPE_TCP",
+    "SOCKET_TYPE_UDP",
+    # "SOCKET_TYPE_RAW",
+)
+__all__ += (
+    "TCPServer",
+    "connect_to_server",
+    "parse_address",
+)
+
+
+if __name__ == "__main__":
+    print("This script is not meant to be run directly.\n")
+    sys.exit(-1)

@@ -1,7 +1,5 @@
 import sys
 
-__all__ = ("CFUtilsException", "ModuleException", "NetworkException")
-
 
 class CFUtilsException(Exception):
     def __str__(self):
@@ -16,6 +14,9 @@ class ModuleException(CFUtilsException):
 
 class NetworkException(CFUtilsException):
     pass
+
+
+__all__ = ("CFUtilsException", "ModuleException", "NetworkException")
 
 
 if __name__ == "__main__":

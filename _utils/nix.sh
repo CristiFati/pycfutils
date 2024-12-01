@@ -44,3 +44,9 @@ if [ -z "${NO_TEST}" ]; then
     done
     export PYTHONPATH=${_PYTHONPATH}
 fi
+
+
+# PyCFUtils root dir:
+# Format modified files
+# NO_TEST="1" FORMAT_FILES="$(git ls-files --modified)" _utils/nix.sh
+# NO_TEST="1" FORMAT_FILES="$(git ls-files --modified)" /mnt/e/Work/Dev/Repos/GitHub/CristiFati/pycfutils/src/_utils/nix.sh

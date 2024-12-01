@@ -4,9 +4,6 @@ import sys
 import time
 from typing import Any
 
-__all__ = ("read_key",)
-
-
 if sys.platform[:3].lower() == "win":
     import msvcrt
 
@@ -62,6 +59,9 @@ def read_key(
     finally:
         if _end_func is not None:
             _end_func(ctx)
+
+
+__all__ = ("read_key",)
 
 
 if __name__ == "__main__":

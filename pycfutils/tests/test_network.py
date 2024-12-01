@@ -137,6 +137,7 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
             self.port,
             {"family": network.SOCKET_FAMILY_IPV4},
         )
+        time.sleep(0.5)
         with network.TCPServer(self.lh4, self.port):
             time.sleep(0.5)
         with network.TCPServer(self.lh4, self.port) as srv:

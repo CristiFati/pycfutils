@@ -196,8 +196,9 @@ class _Server:
                     self.handled_ok += 1
                 self.handled_total += 1
 
-    def close(self) -> None:
-        self.stop()
+    def close(self, stop_thread=True) -> None:
+        if stop_thread:
+            self.stop()
         _close_socket(self.socket)
         self.socket = None
 

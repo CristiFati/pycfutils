@@ -10,10 +10,6 @@ if plat == "win32":
         "message_box",
         "constants",
     )
-elif plat == "linux":
-    pass
-elif plat == "macos":
-    pass
 
 
 if __name__ == "__main__":

@@ -160,6 +160,7 @@ setup_args = dict(
         "Programming Language :: Python",
         "Programming Language :: Python :: 3 :: Only",
         "Topic :: Software Development",
+        "Topic :: Utilities",
     ],
     platforms=[
         "All",

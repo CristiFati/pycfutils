@@ -122,7 +122,7 @@ class NetworkGenericTestCase(NetworkBaseTestCase):
 
 # @unittest.skip("")
 class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
-    def test_tcpserver(self):
+    def test_server(self):
         self.assertRaises(
             network.NetworkException,
             network.TCPServer,
@@ -184,7 +184,9 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
             attempt_timeout=0,
         )
 
-    def test_server_client(self):
+    def test_server_client(
+        self,
+    ):  # @TODO - cfati: On Nix, this should be last test run (due to TIME_WAIT)
         with network.TCPServer(self.lh4, self.port, silent=True) as srv:
             self.assertEqual(
                 network.connect_to_server(self.lh4, self.port, attempt_timeout=0.5)[0],
@@ -197,7 +199,7 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
                 network.connect_to_server,
                 self.lh4,
                 self.port,
-                {"attempt_timeout": 0},
+                **{"attempt_timeout": 0},
             )
             srv.stop()
             self.assertEqual(
@@ -210,19 +212,19 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
                 self.lh4,
             )
             srv.close()
+            time.sleep(0.1)
             self.assertRaises(
                 network.NetworkException,
                 network.connect_to_server,
                 self.lh4,
                 self.port,
             )
-        time.sleep(0.1)
         self.assertRaises(
             network.NetworkException,
             network.connect_to_server,
             self.lh4,
             self.port,
-            {"attempt_timeout": 0.5},
+            **{"attempt_timeout": 0.5},
         )
         if self.ipv6:
             with network.TCPServer(self.lh6, self.port, silent=True) as srv:
@@ -239,13 +241,12 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
                     network.connect_to_server,
                     self.lh6,
                     self.port,
-                    {"attempt_timeout": 0},
+                    **{"attempt_timeout": 0},
                 )
-            time.sleep(0.1)
             self.assertRaises(
                 network.NetworkException,
                 network.connect_to_server,
                 self.lh6,
                 self.port,
-                {"attempt_timeout": 0.5},
+                **{"attempt_timeout": 0.5},
             )

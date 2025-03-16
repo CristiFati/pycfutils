@@ -1,3 +1,5 @@
+import traceback
+
 import select
 import socket
 import sys
@@ -65,14 +67,18 @@ def _create_socket(
     return sock
 
 
-def _close_socket(s) -> None:
-    if not isinstance(s, socket.socket):
-        return
-    try:
-        s.shutdown(socket.SHUT_RDWR)
-    except Exception:
-        pass
-    s.close()
+def _close_socket(sock, method: Optional[int] = socket.SHUT_RDWR) -> int:
+    if not isinstance(sock, socket.socket):
+        return -1
+    ret = 0
+    if method is not None:
+        try:
+            sock.shutdown(method)
+        except:
+            ret = 1
+            # traceback.print_exc()
+    sock.close()
+    return ret
 
 
 def _parse_address(
@@ -232,7 +238,7 @@ class TCPServer(_Server):
                 print(f"Established connection from {peer[0]:s}:{peer[1]:d}")
             _close_socket(client)
             return True
-        except OSError as e:
+        except Exception as e:
             if not self.silent:
                 print(e)
             return False
@@ -260,7 +266,14 @@ def connect_to_server(
     except OSError as e:
         raise NetworkException("Could not connect to server") from e
     finally:
-        _close_socket(client)
+        if attempt_timeout > 0:
+            _close_socket(client)
+        else:
+            ws = select.select((), (client,), ())[1]
+            if ws and ws[0] == client:
+                _close_socket(client)
+            else:
+                _close_socket(client, method=None)
 
 
 __all__ = (

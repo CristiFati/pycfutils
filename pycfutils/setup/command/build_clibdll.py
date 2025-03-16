@@ -133,13 +133,18 @@ class BuildCLibDll(build_clib):
             path_prefix = build_py_cmd.build_lib if build_py_cmd else ""
             for src_base, dst_path in build_info.get("copy_files", {}).items():
                 src_file = os.path.join(self.build_clib, src_base)
-                if os.path.isfile(src_file):
+                src = (
+                    src_file
+                    if os.path.isfile(src_file)
+                    else src_base if os.path.isfile(src_base) else ""
+                )
+                if src:
                     if path_prefix:
                         dst_path = os.path.join(path_prefix, dst_path)
                     os.makedirs(dst_path, exist_ok=True)
-                    shutil.copyfile(
-                        src_file, os.path.join(dst_path, os.path.basename(src_file))
-                    )
+                    shutil.copyfile(src, os.path.join(dst_path, os.path.basename(src)))
+                else:
+                    log.warn(f"{src_base} specified but not found. Skipping")
 
 
 build_clibdll = BuildCLibDll

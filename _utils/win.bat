@@ -19,6 +19,7 @@ if defined NO_TEST (
     )
     call bat_funcs dirname %TEST_VENV_PATTERN% _VENVS_DIR
     set _VENVS_DIR=%_VENVS_DIR:"=%
+    set _PY_CODE="import sys, pycfutils.gui as pg, pycfutils.gui.effects as pge, pycfutils.io as pio, pycfutils.setup.command.build_clibdll as pscbcd;print('Press a key: ', pio.read_key(timeout=1));print(pg.message_box('MBox', sys.version, 320, 200))"
     for /f %%g in ('dir /b /ad /a-l %TEST_VENV_PATTERN:"=%') do (
         echo Using environment: "%_VENVS_DIR%\%%g"
         call "%_VENVS_DIR%\%%g\Scripts\activate.bat"
@@ -26,9 +27,11 @@ if defined NO_TEST (
         python -m pip uninstall -y pycfutils
         python -m pip -v install --no-index -f %TEST_WHEEL_DIR% pycfutils
         python -m unittest discover -s "%_VENVS_DIR%\%%g\Lib\site-packages\pycfutils\tests"
-        python -c "import sys, pycfutils.gui as pg, pycfutils.io as pio, pycfutils.setup.command.build_clibdll as pscbcd;print('Press a key: ', pio.read_key(1));print(pg.message_box('MBox', sys.version, 320, 200))"
+        echo Test dummy imports...
+        python -c %_PY_CODE%
         python -m pip uninstall -y pycfutils
         call deactivate
     )
+    set _PY_CODE=
     goto :eof
 

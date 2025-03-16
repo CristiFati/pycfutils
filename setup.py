@@ -177,6 +177,8 @@ setup_args = dict(
             _NAME,
             f"{_NAME}.gstreamer",
             f"{_NAME}.gui",
+            f"{_NAME}.gui._win",
+            f"{_NAME}.gui.effects",
             f"{_NAME}.setup",
             f"{_NAME}.setup.command",
             f"{_NAME}.tests",

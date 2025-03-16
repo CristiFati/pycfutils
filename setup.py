@@ -53,6 +53,7 @@ _VS_FILES = tuple(
     )
 )
 _TOOL_FILES = tuple(f"_utils/{e}" for e in ("nix.sh", "win.bat"))
+_OTHER_FILES = ("release_branch.sh",)
 
 
 def version():
@@ -85,6 +86,7 @@ class SDist(sdist_orig):
         ret.extend(_SOURCE_FILES)
         ret.extend(_VS_FILES)
         ret.extend(_TOOL_FILES)
+        ret.extend(_OTHER_FILES)
         return ret
 
     def _adjust_sources(self, extra_files):

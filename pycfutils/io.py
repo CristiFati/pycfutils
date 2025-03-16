@@ -43,7 +43,10 @@ def read_key(
 ):
     ctx = _start_func() if _start_func is not None else None
     if timeout < 0:
-        return _read_key_func() if _read_key_func is not None else None
+        ret = _read_key_func() if _read_key_func is not None else None
+        if _end_func is not None:
+            _end_func(ctx)
+        return ret
     try:
         poll_interval = (
             timeout / 2.0 if poll_interval > timeout / 2.0 else poll_interval

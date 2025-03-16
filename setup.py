@@ -17,29 +17,32 @@ from wheel.bdist_wheel import bdist_wheel as bdist_wheel_orig
 from pycfutils.setup.command.build_clibdll import build_clibdll
 from pycfutils.setup.command.install_platlib import install_platlib
 
-_IS_WIN = sys.platform[:3].lower() == "win"
+plat = sys.platform.lower()
+_IS_WIN = plat == "win32"
 
 _NAME = "pycfutils"
+_CINTERFACE = "cinterface"
 
 if _IS_WIN:
     _EXT = ".dll"
     _SUF = "win"
+    _CINTERFACE_OUT_DLL_FILE_STEM = "hopa"
 else:
     _EXT = ".so"
     _SUF = "nix"
+    _CINTERFACE_OUT_DLL_FILE_STEM = f"lib{_CINTERFACE}"
 
 _INCLUDE_DIR = f"include/{_NAME}"
-_CINTERFACE = "cinterface"
 _INCLUDE_FILES = (f"{_INCLUDE_DIR}/{_CINTERFACE}.h",)
 _SOURCE_FILES = [
     e.replace("\\", "/")
     for e in glob.glob(os.path.join(_NAME, "src", f"{_CINTERFACE}*.cpp"))
 ]
-_CINTERFACE_OUT_FILE_STEM = f"lib{_CINTERFACE}"
-_LIBS_DIR = "libs"
-_CINTERFACE_DLL_FILE_BASE = f"{_CINTERFACE_OUT_FILE_STEM}{_EXT}"
+_CINTERFACE_DLL_FILE_BASE = f"{_CINTERFACE_OUT_DLL_FILE_STEM}{_EXT}"
 _CINTERFACE_DLL_FILE = _CINTERFACE_DLL_FILE_BASE
-_CINTERFACE_LIB_FILE_BASE = f"{_CINTERFACE_OUT_FILE_STEM}.lib"
+_CINTERFACE_OUT_LIB_FILE_STEM = f"lib{_CINTERFACE}"
+_CINTERFACE_LIB_FILE_BASE = f"{_CINTERFACE_OUT_LIB_FILE_STEM}.lib"
+_LIBS_DIR = "libs"
 _CINTERFACE_LIB_FILE = f"{_LIBS_DIR}/{_CINTERFACE_LIB_FILE_BASE}"
 _VS_FILES = tuple(
     f"vs/{e}"
@@ -111,7 +114,7 @@ sdist = SDist
 
 
 c_interface_dll = (
-    _CINTERFACE_OUT_FILE_STEM,
+    _CINTERFACE_OUT_DLL_FILE_STEM,
     {
         "dll": True,
         "copy_files": (
@@ -133,6 +136,7 @@ c_interface_dll = (
             ("_WINDLL", None),
         ),
         "libraries": ("user32",),
+        "extra_link_args": (f"/IMPLIB:{_CINTERFACE_LIB_FILE_BASE}",),
     },
 )
 

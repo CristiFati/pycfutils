@@ -10,7 +10,7 @@ from pycfutils.system import path_ancestor
 
 _DLL_NAME = os.path.join(
     path_ancestor(os.path.abspath(__file__), level=3),
-    "libcinterface.dll",
+    "hopa.dll",
 )
 
 try:

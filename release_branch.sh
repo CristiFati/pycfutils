@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# NO_TEST=1 FORMAT_FILES="$(git ls-files --modified | grep py)" _utils/nix.sh
-
 _PYCFU_VER="$(date +"%Y.%m.%d")"
 _VFILE="pycfutils/version.py"
 _BRANCH_NAME="release_${_PYCFU_VER}"

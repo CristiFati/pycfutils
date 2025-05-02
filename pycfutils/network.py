@@ -1,9 +1,8 @@
-import traceback
-
 import select
 import socket
 import sys
 import threading
+import traceback
 from typing import Any, AnyStr, Dict, Optional, Tuple
 
 from pycfutils.exceptions import NetworkException

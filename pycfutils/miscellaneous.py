@@ -6,7 +6,17 @@ import time
 from datetime import datetime
 from enum import Enum
 from pprint import pprint
-from typing import Any, Callable, Dict, Iterable, Optional, Reversible, Sequence, Tuple, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    Optional,
+    Reversible,
+    Sequence,
+    Tuple,
+    Union,
+)
 
 
 class DictMergeOverlapPolicy(Enum):
@@ -134,7 +144,7 @@ def nested_dict_item(data: Dict, keys: Iterable[Any]):
     return data
 
 
-def nest_dict(keys: Reversible[Any], value: Any):
+def nest_object(keys: Reversible[Any], value: Any):
     for key in reversed(keys):
         value = {key: value}
     return value

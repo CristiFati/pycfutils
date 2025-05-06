@@ -28,7 +28,7 @@ print(pycfutils.io.read_key(timeout=1))
 
 print(misc.timestamp_string(human_readable=True))
 print(tuple(misc.progression(ratio=2)))
-print(misc.merge_dicts({1: 2}, misc.nest_dict((1,), 3)))
+print(misc.merge_dicts({1: 2}, misc.nest_object((1,), 3)))
 
 @misc.timed_execution()
 def func(arg0, kw0=1):

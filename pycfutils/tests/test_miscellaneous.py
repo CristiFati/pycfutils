@@ -145,18 +145,23 @@ class MiscellaneousTestCase(unittest.TestCase):
         self.assertRaises(TypeError, miscellaneous.nested_dict_item, d, (1, 2, 3, 4, 5))
         self.assertRaises(TypeError, miscellaneous.nested_dict_item, None, (1,))
 
-    def test_nest_dict(self):
-        self.assertEqual(miscellaneous.nest_dict((), None), None)
-        self.assertEqual(miscellaneous.nest_dict((), 1), 1)
-        self.assertEqual(miscellaneous.nest_dict((1,), 1), {1: 1})
-        self.assertEqual(miscellaneous.nest_dict((1, 2), 1), {1: {2: 1}})
-        self.assertEqual(miscellaneous.nest_dict((1, 1, 1), None), {1: {1: {1: None}}})
-        self.assertEqual(miscellaneous.nest_dict((1, 2, "3"), 1), {1: {2: {"3": 1}}})
+    def test_nest_object(self):
+        self.assertEqual(miscellaneous.nest_object((), None), None)
+        self.assertEqual(miscellaneous.nest_object((), 1), 1)
+        self.assertEqual(miscellaneous.nest_object((1,), 1), {1: 1})
+        self.assertEqual(miscellaneous.nest_object((1, 2), 1), {1: {2: 1}})
         self.assertEqual(
-            miscellaneous.nest_dict([1, 2, "3"], [1]), {1: {2: {"3": [1]}}}
+            miscellaneous.nest_object((1, 1, 1), None), {1: {1: {1: None}}}
         )
-        self.assertEqual(miscellaneous.nest_dict({1: 2, 2: 2, "2": 2}, [1]), {1: {2: {"2": [1]}}})
-        self.assertRaises(TypeError, miscellaneous.nest_dict, None, None)
+        self.assertEqual(miscellaneous.nest_object((1, 2, "3"), 1), {1: {2: {"3": 1}}})
+        self.assertEqual(
+            miscellaneous.nest_object([1, 2, "3"], [1]), {1: {2: {"3": [1]}}}
+        )
+        self.assertEqual(
+            miscellaneous.nest_object(tuple({1: 2, 2: 2, "2": 2}), [1]),
+            {1: {2: {"2": [1]}}},
+        )
+        self.assertRaises(TypeError, miscellaneous.nest_object, None, None)
 
     def test_merge_dicts(self):
         d0 = {1: 2}

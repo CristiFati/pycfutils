@@ -32,7 +32,19 @@ if [ -z "${NO_TEST}" ] && [ -z "${NO_TESTS}" ]; then
         TEST_WHEEL_DIR="/mnt/e/Work/Dev/Repos/GitHub/CristiFati/pycfutils/src/dist"
     fi
     _PY_CODE="import pycfutils.gui as pg, pycfutils.gui.effects as pge, pycfutils.io as pio, pycfutils.setup.command.build_clibdll as pscbcd;print('Press a key: ', pio.read_key(timeout=1))"
+    _TEST_PORT="27183"
     for _venv in $(ls -d ${TEST_VENV_PATTERN}); do
+        _WAIT_DISPLAYED=1
+        _EC="0"
+        while [ "${_EC}" = "0" ]; do
+            if [ -n "${_WAIT_DISPLAYED}" ]; then
+                printf -- "Waiting until TIME_WAIT sockets are closed...\n"
+                _WAIT_DISPLAYED=
+            fi
+            sleep 1
+            netstat -an | grep ${_TEST_PORT} > /dev/null
+            _EC="${?}"
+        done
         printf -- "Using environment: %s\n" ${_venv}
          . "${_venv}/bin/activate"
         python -VV

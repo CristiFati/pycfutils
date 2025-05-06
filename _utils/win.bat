@@ -5,6 +5,9 @@ setlocal enabledelayedexpansion enableextensions
 if defined NO_TEST (
     goto :eof
 )
+if defined NO_TESTS (
+    goto :eof
+)
 
 :_test
     echo Testing...

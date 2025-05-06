@@ -19,7 +19,7 @@ if [ -z "${NO_FORMAT}" ]; then
     done
 fi
 
-if [ -z "${NO_TEST}" ]; then
+if [ -z "${NO_TEST}" ] && [ -z "${NO_TESTS}" ]; then
     printf -- "Testing...\n"
     _PYTHONPATH=${PYTHONPATH}
     export PYTHONPATH=

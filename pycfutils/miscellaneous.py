@@ -74,7 +74,10 @@ def _callable_string(callable_: Callable, *args: Tuple, **kwargs: Dict) -> str:
         if kwargs
         else ""
     )
-    return f"{callable_.__name__}({args_str}{arg_sep if args_str and kwargs_str else ''}{kwargs_str})"
+    return (
+        f"{callable_.__name__}({args_str}"
+        f"{arg_sep if args_str and kwargs_str else ''}{kwargs_str})"
+    )
 
 
 # @Decorator
@@ -193,7 +196,7 @@ __all__ = (
     "dimensions_2d",
     "int_format",
     "merge_dicts",
-    "nest_dict",
+    "nest_object",
     "nested_dict_item",
     "pretty_print",
     "progression",

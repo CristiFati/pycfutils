@@ -46,6 +46,8 @@ C         H         A         N        G        E         L         O         G
 [vTBR]
 
 [v2025.05.06]
+    - Nix TIME_WAIT sockets workaround (gainarie)
+      @CristiFati, 250506
     - Dictionary utilities
       @CristiFati, 250506
     - License year

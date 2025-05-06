@@ -127,3 +127,112 @@ class MiscellaneousTestCase(unittest.TestCase):
                             self.assertGreater(0.1, abs(sleep_val - ret[1]))
                         else:
                             self.assertEqual(ret, ret_val)
+
+    def test_nested_dict_item(self):
+        d = {1: {2: {3: {4: 5, 6: 7}}, 8: {9: 0}}}
+        self.assertEqual(miscellaneous.nested_dict_item(d, ()), d)
+        self.assertEqual(miscellaneous.nested_dict_item(d, (1,)), d[1])
+        self.assertEqual(miscellaneous.nested_dict_item(d, [1, 2]), d[1][2])
+        self.assertEqual(miscellaneous.nested_dict_item(d, (1, 2, 3, 4)), d[1][2][3][4])
+        self.assertEqual(miscellaneous.nested_dict_item(d, {1: 69}), d[1])
+        self.assertRaises(TypeError, miscellaneous.nested_dict_item, d, None)
+        self.assertRaises(KeyError, miscellaneous.nested_dict_item, d, (69,))
+        self.assertRaises(KeyError, miscellaneous.nested_dict_item, d, (1, 69))
+        self.assertRaises(KeyError, miscellaneous.nested_dict_item, d, [1, 2, 69])
+        self.assertRaises(KeyError, miscellaneous.nested_dict_item, d, (1, 2, 3, 69))
+        self.assertRaises(KeyError, miscellaneous.nested_dict_item, d, ("1",))
+        self.assertRaises(KeyError, miscellaneous.nested_dict_item, d, {"1": 1})
+        self.assertRaises(TypeError, miscellaneous.nested_dict_item, d, (1, 2, 3, 4, 5))
+        self.assertRaises(TypeError, miscellaneous.nested_dict_item, None, (1,))
+
+    def test_nest_dict(self):
+        self.assertEqual(miscellaneous.nest_dict((), None), None)
+        self.assertEqual(miscellaneous.nest_dict((), 1), 1)
+        self.assertEqual(miscellaneous.nest_dict((1,), 1), {1: 1})
+        self.assertEqual(miscellaneous.nest_dict((1, 2), 1), {1: {2: 1}})
+        self.assertEqual(miscellaneous.nest_dict((1, 1, 1), None), {1: {1: {1: None}}})
+        self.assertEqual(miscellaneous.nest_dict((1, 2, "3"), 1), {1: {2: {"3": 1}}})
+        self.assertEqual(
+            miscellaneous.nest_dict([1, 2, "3"], [1]), {1: {2: {"3": [1]}}}
+        )
+        self.assertEqual(miscellaneous.nest_dict({1: 2, 2: 2, "2": 2}, [1]), {1: {2: {"2": [1]}}})
+        self.assertRaises(TypeError, miscellaneous.nest_dict, None, None)
+
+    def test_merge_dicts(self):
+        d0 = {1: 2}
+        d1 = {2: 3, 3: 4}
+        d2 = {1: 2, 2: 3, 3: 4}
+        d3 = {2: 5, 4: 5}
+        d13jl = {2: [3, 5], 3: 4, 4: 5}
+        d13jt = {k: tuple(v) if isinstance(v, list) else v for k, v in d13jl.items()}
+        d13d = {3: 4, 4: 5}
+        d13l = {2: 3, 3: 4, 4: 5}
+        d13r = {2: 5, 3: 4, 4: 5}
+        self.assertEqual(miscellaneous.merge_dicts({}, {}), {})
+        self.assertEqual(miscellaneous.merge_dicts(d0, {}), d0)
+        self.assertEqual(miscellaneous.merge_dicts({}, d0), d0)
+        self.assertEqual(miscellaneous.merge_dicts(d0, d1), d2)
+        self.assertEqual(miscellaneous.merge_dicts(d1, d0), d2)
+        funcs = (lambda arg: arg, lambda arg: {1: arg}, lambda arg: {1: {2: arg}})
+        for func in funcs:
+            self.assertEqual(miscellaneous.merge_dicts(func(d1), func(d3)), func(d13jl))
+            self.assertEqual(
+                miscellaneous.merge_dicts(func(d3), func(d1)),
+                func(
+                    {k: v[::-1] if isinstance(v, list) else v for k, v in d13jl.items()}
+                ),
+            )
+            pol = miscellaneous.DictMergeOverlapPolicy.JOIN_LIST
+            self.assertEqual(
+                miscellaneous.merge_dicts(func(d1), func(d3), overlap_policy=pol),
+                func(d13jl),
+            )
+            self.assertEqual(
+                miscellaneous.merge_dicts(func(d3), func(d1), overlap_policy=pol),
+                func(
+                    {k: v[::-1] if isinstance(v, list) else v for k, v in d13jl.items()}
+                ),
+            )
+            pol = miscellaneous.DictMergeOverlapPolicy.JOIN_TUPLE
+            self.assertEqual(
+                miscellaneous.merge_dicts(func(d1), func(d3), overlap_policy=pol),
+                func(d13jt),
+            )
+            self.assertEqual(
+                miscellaneous.merge_dicts(func(d3), func(d1), overlap_policy=pol),
+                func(
+                    {
+                        k: v[::-1] if isinstance(v, tuple) else v
+                        for k, v in d13jt.items()
+                    }
+                ),
+            )
+            pol = miscellaneous.DictMergeOverlapPolicy.DELETE
+            self.assertEqual(
+                miscellaneous.merge_dicts(func(d1), func(d3), overlap_policy=pol),
+                func(d13d),
+            )
+            self.assertEqual(
+                miscellaneous.merge_dicts(func(d3), func(d1), overlap_policy=pol),
+                func(d13d),
+            )
+            pol = miscellaneous.DictMergeOverlapPolicy.LEFT
+            self.assertEqual(
+                miscellaneous.merge_dicts(func(d1), func(d3), overlap_policy=pol),
+                func(d13l),
+            )
+            self.assertEqual(
+                miscellaneous.merge_dicts(func(d3), func(d1), overlap_policy=pol),
+                func(d13r),
+            )
+            pol = miscellaneous.DictMergeOverlapPolicy.RIGHT
+            self.assertEqual(
+                miscellaneous.merge_dicts(func(d1), func(d3), overlap_policy=pol),
+                func(d13r),
+            )
+            self.assertEqual(
+                miscellaneous.merge_dicts(func(d3), func(d1), overlap_policy=pol),
+                func(d13l),
+            )
+        self.assertRaises(TypeError, miscellaneous.merge_dicts, d0, None)
+        self.assertRaises(TypeError, miscellaneous.merge_dicts, [], d0)

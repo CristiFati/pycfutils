@@ -45,6 +45,14 @@ C         H         A         N        G        E         L         O         G
 
 [vTBR]
 
+[v2025.05.06]
+    - Dictionary utilities
+      @CristiFati, 250506
+    - License year
+      @CristiFati, 250504
+    - Minor fixes
+      @CristiFati, 250502
+
 [v2025.03.17]
     - Automate release branch creation
       @CristiFati, 250316

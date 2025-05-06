@@ -1,10 +1,22 @@
+import copy
 import math
 import operator
 import sys
 import time
 from datetime import datetime
+from enum import Enum
 from pprint import pprint
-from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, Optional, Reversible, Sequence, Tuple, Union
+
+
+class DictMergeOverlapPolicy(Enum):
+    JOIN_LIST = 0
+    JOIN_TUPLE = 1
+    DELETE = 2
+    LEFT = 3
+    RIGHT = 4
+    DEFAULT = JOIN_LIST
+
 
 Numeric = Union[int, float]
 
@@ -110,15 +122,69 @@ def progression(
             break
 
 
-def pretty_print(obj, head=None, indent=2, sort_dicts=False):
+def pretty_print(obj: Any, head: Any = None, indent: int = 2, sort_dicts: bool = False):
     if head is not None:
         print(head)
     pprint(obj, indent=indent, sort_dicts=sort_dicts)
 
 
+def nested_dict_item(data: Dict, keys: Iterable[Any]):
+    for key in keys:
+        data = data[key]
+    return data
+
+
+def nest_dict(keys: Reversible[Any], value: Any):
+    for key in reversed(keys):
+        value = {key: value}
+    return value
+
+
+def _merge_dicts(
+    left: Dict,
+    right: Dict,
+    overlap_policy: DictMergeOverlapPolicy,
+):
+    ret = {}
+    for k, v in left.items():
+        ret[k] = v
+    for k, v in right.items():
+        if k in ret:
+            dk = ret[k]
+            if isinstance(dk, dict) and isinstance(v, dict):
+                ret[k] = merge_dicts(dk, v, overlap_policy)
+            else:
+                if overlap_policy == DictMergeOverlapPolicy.JOIN_TUPLE:
+                    ret[k] = (dk, v)
+                elif overlap_policy == DictMergeOverlapPolicy.RIGHT:
+                    ret[k] = v
+                elif overlap_policy == DictMergeOverlapPolicy.DELETE:
+                    del ret[k]
+                elif overlap_policy == DictMergeOverlapPolicy.LEFT:
+                    pass
+                else:
+                    ret[k] = [dk, v]
+        else:
+            ret[k] = v
+    return ret
+
+
+def merge_dicts(
+    left: Dict,
+    right: Dict,
+    overlap_policy: DictMergeOverlapPolicy = DictMergeOverlapPolicy.DEFAULT,
+):
+    if not isinstance(left, dict) or not isinstance(right, dict):
+        raise TypeError("One of the supplied arguments is not a dict")
+    return copy.deepcopy(_merge_dicts(left, right, overlap_policy))
+
+
 __all__ = (
     "dimensions_2d",
     "int_format",
+    "merge_dicts",
+    "nest_dict",
+    "nested_dict_item",
     "pretty_print",
     "progression",
     "timed_execution",

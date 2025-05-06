@@ -37,4 +37,3 @@ if defined NO_TESTS (
     )
     set _PY_CODE=
     goto :eof
-

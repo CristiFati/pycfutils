@@ -12,3 +12,7 @@ _VFILE="${_VFILE}" python -c "import os, time;y, m, d = time.gmtime()[:3];f = op
 git add "${_VFILE}"
 
 git commit -m "build: bump version to ${_PYCFU_VER}"
+
+
+# Upload:
+# python -m twine upload dist/*

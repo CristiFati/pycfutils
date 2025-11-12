@@ -3,7 +3,7 @@ import socket
 import sys
 import threading
 import traceback
-from typing import Any, AnyStr, Dict, Optional, Tuple
+from typing import Any, AnyStr, Dict, Optional, Tuple, Union
 
 from pycfutils.exceptions import NetworkException
 
@@ -250,7 +250,9 @@ def connect_to_server(
     attempts: int = 1,
     attempt_timeout: float = _TIMEOUT_DEFAULT,
     options: SockOpts = None,
-) -> Tuple:
+    # If True, socket will have to be closed by caller
+    _return_client_socket: bool = False,
+) -> Union[Tuple, socket.socket, None]:
     attempts = max(attempts, 1)
     record = parse_address(
         address, port=port, family=family, type_=SOCKET_TYPE_TCP, exact_matches=1
@@ -261,18 +263,22 @@ def connect_to_server(
         client = _create_socket(family, type_, attempt_timeout, options)
         for _ in range(attempts):
             client.connect((address, port))
-            return client.getsockname()
+            if _return_client_socket:
+                return client
+            else:
+                return client.getsockname()
     except OSError as e:
         raise NetworkException("Could not connect to server") from e
     finally:
-        if attempt_timeout > 0:
-            _close_socket(client)
-        else:
-            ws = select.select((), (client,), ())[1]
-            if ws and ws[0] == client:
+        if not _return_client_socket:
+            if attempt_timeout > 0:
                 _close_socket(client)
             else:
-                _close_socket(client, method=None)
+                ws = select.select((), (client,), ())[1]
+                if ws and ws[0] == client:
+                    _close_socket(client)
+                else:
+                    _close_socket(client, method=None)
 
 
 __all__ = (

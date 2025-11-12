@@ -1,6 +1,7 @@
 import calendar
 import copy
 import datetime
+import json
 import math
 import operator
 import sys
@@ -235,6 +236,11 @@ def merge_dicts(
     return copy.deepcopy(_merge_dicts(left, right, overlap_policy))
 
 
+def write_json_to_file(json_obj, file_name, newline="", indent=2):
+    with open(file_name, mode="w", newline=newline) as f:
+        json.dump(json_obj, f, indent=indent)
+
+
 __all__ = (
     "dimensions_2d",
     "int_format",
@@ -246,6 +252,7 @@ __all__ = (
     "timed_execution",
     "timestamp_string",
     "uniques",
+    "write_json_to_file",
 )
 
 

@@ -1,9 +1,10 @@
+import calendar
 import copy
+import datetime
 import math
 import operator
 import sys
 import time
-from datetime import datetime
 from enum import Enum
 from pprint import pprint
 from typing import (
@@ -30,6 +31,11 @@ class DictMergeOverlapPolicy(Enum):
 
 Numeric = Union[int, float]
 
+if sys.version_info[:2] >= (3, 9):
+    TimestampStringCallable = Callable[[Any, ...], datetime.datetime]
+else:
+    TimestampStringCallable = Callable[..., datetime.datetime]
+
 
 def dimensions_2d(n: int) -> Tuple:
     if n <= 0:
@@ -44,26 +50,63 @@ def int_format(limit: int) -> str:
 
 
 def timestamp_string(
-    timestamp: Union[None, Sequence, datetime, int, float] = None,
+    timestamp: Union[None, Sequence, datetime.datetime, int, float] = None,
     human_readable: bool = False,
     date_separator: str = "-",
     time_separator: str = ":",
     separator: str = " ",
+    microseconds: bool = False,
+    timezone: bool = False,
+    local: bool = False,
+    # Convert to datetime.datetime
+    convert_function: TimestampStringCallable = lambda arg, *args: arg,
+    convert_function_extra_args: Tuple = (),
 ) -> str:
-    tm = (
-        time.gmtime(timestamp)
-        if timestamp is None or isinstance(timestamp, (int, float))
-        else timestamp.timetuple() if isinstance(timestamp, datetime) else timestamp
-    )[:6]
+    tz = None if local else datetime.timezone.utc
+    if timestamp is None:
+        tm = datetime.datetime.now(tz=tz)
+    elif isinstance(timestamp, (int, float)):
+        tm = datetime.datetime.fromtimestamp(timestamp, tz=tz)
+    elif isinstance(timestamp, time.struct_time):
+        convert_func = time.mktime if local else calendar.timegm
+        tm = datetime.datetime.fromtimestamp(convert_func(timestamp), tz=tz)
+    elif isinstance(timestamp, (tuple, list)):
+        tm = datetime.datetime(*timestamp, tzinfo=tz)
+    elif callable(convert_function):
+        tm = convert_function(timestamp, *convert_function_extra_args)
+    else:
+        tm = timestamp
+    if timezone:
+        if tm.tzinfo is None:
+            tm = tm.astimezone(tz=tz)
+        secs = tm.tzinfo.utcoffset(None).seconds
+        negative = True if secs < 0 else False
+        tz_info = divmod(divmod(abs(secs), 60)[0], 60)
+        if negative:
+            tz_info = -tz_info[0], tz_info[1]
+    else:
+        tz_info = None
     if human_readable:
-        return (
-            f"{tm[0]:04d}{date_separator}"
-            f"{tm[1]:02d}{date_separator}"
-            f"{tm[2]:02d}{separator}"
-            f"{tm[3]:02d}{time_separator}"
-            f"{tm[4]:02d}{time_separator}{tm[5]:02d}"
+        ret = (
+            f"{tm.year:04d}{date_separator}"
+            f"{tm.month:02d}{date_separator}"
+            f"{tm.day:02d}{separator}"
+            f"{tm.hour:02d}{time_separator}"
+            f"{tm.minute:02d}{time_separator}"
+            f"{tm.second:02d}"
         )
-    return f"{tm[0]:04d}{tm[1]:02d}{tm[2]:02d}{tm[3]:02d}{tm[4]:02d}{tm[5]:02d}"
+        if microseconds:
+            ret = f"{ret}.{tm.microsecond:06d}"
+        if tz_info:
+            ret = f"{ret}{tz_info[0]:+03d}:{tz_info[1]:02d}"
+    else:
+        ret = (
+            f"{tm.year:04d}{tm.month:02d}{tm.day:02d}"
+            f"{tm.hour:02d}{tm.minute:02d}{tm.second:02d}"
+        )
+        if microseconds:
+            ret = f"{ret}{tm.microsecond:06d}"
+    return ret
 
 
 def _callable_string(callable_: Callable, *args: Tuple, **kwargs: Dict) -> str:

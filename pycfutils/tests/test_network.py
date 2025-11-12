@@ -211,6 +211,15 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
                 network.connect_to_server(self.lh4, self.port, attempt_timeout=0.5)[0],
                 self.lh4,
             )
+            time.sleep(0.1)
+            cli = network.connect_to_server(
+                self.lh4, self.port, attempt_timeout=0.5, _return_client_socket=True
+            )
+            self.assertEqual(cli.getpeername(), (self.lh4, self.port))
+            try:
+                network._close_socket(cli)
+            except:
+                pass
             srv.close()
             time.sleep(0.1)
             self.assertRaises(

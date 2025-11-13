@@ -63,6 +63,6 @@ fi
 
 # PyCFUtils root dir:
 # Format modified files
-# NO_TEST="1" FORMAT_FILES="$(git ls-files --modified)" _utils/nix.sh
+# NO_TEST="1" FORMAT_FILES="$(git ls-files --modified | grep .py)" _utils/nix.sh
 # NO_TEST="1" FORMAT_FILES="$(find pycfutils -name "*.py")" _utils/nix.sh
-# NO_TEST="1" FORMAT_FILES="$(git ls-files --modified)" /mnt/e/Work/Dev/Repos/GitHub/CristiFati/pycfutils/src/_utils/nix.sh
+# NO_TEST="1" FORMAT_FILES="$(git ls-files --modified | grep .py)" /mnt/e/Work/Dev/Repos/GitHub/CristiFati/pycfutils/src/_utils/nix.sh

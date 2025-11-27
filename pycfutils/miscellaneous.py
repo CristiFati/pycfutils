@@ -179,10 +179,18 @@ def progression(
             break
 
 
-def pretty_print(obj: Any, head: Any = None, indent: int = 2, sort_dicts: bool = False):
+def pretty_print(
+    obj: Any,
+    head: Any = None,
+    tail: Any = None,
+    indent: int = 2,
+    sort_dicts: bool = False,
+):
     if head is not None:
         print(head)
     pprint(obj, indent=indent, sort_dicts=sort_dicts)
+    if tail is not None:
+        print(tail)
 
 
 def nested_dict_item(data: Dict, keys: Iterable[Any]):

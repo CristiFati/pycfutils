@@ -1,6 +1,7 @@
 import contextlib
 import datetime
 import operator
+import random
 import time
 import unittest
 from io import StringIO
@@ -361,3 +362,61 @@ class MiscellaneousTestCase(unittest.TestCase):
             )
         self.assertRaises(TypeError, miscellaneous.merge_dicts, d0, None)
         self.assertRaises(TypeError, miscellaneous.merge_dicts, [], d0)
+
+    def test_randomize(self):
+        v = random.uniform(-100, 100)
+        self.assertEqual(
+            miscellaneous.randomize(
+                v, left_deviation_percent=-10, right_deviation_percent=0
+            ),
+            v,
+        )
+        for d in (None, 0, 1, 2, 3, 4, 6, -1, -2):
+            self.assertEqual(
+                miscellaneous.randomize(
+                    v,
+                    left_deviation_percent=-10,
+                    right_deviation_percent=0,
+                    round_result=True,
+                    round_digits=d,
+                ),
+                round(v, ndigits=d),
+            )
+        lol = 1
+        hil = 500
+        for lop, hip in (
+            (random.randint(lol, hil), random.randint(lol, hil)),
+            (random.randint(lol, hil), 0),
+            (0, random.randint(lol, hil)),
+        ):
+            self.assertTrue(
+                isinstance(
+                    miscellaneous.randomize(
+                        v,
+                        left_deviation_percent=lop,
+                        right_deviation_percent=hip,
+                        round_result=True,
+                        round_digits=None,
+                    ),
+                    int,
+                )
+            )
+            lo = v - abs(v) * lop / 100
+            hi = v + abs(v) * hip / 100
+            # print(lop, hip, v, lo, hi)
+            vs = []
+            for _ in range(500):
+                vs.append(
+                    miscellaneous.randomize(
+                        v, left_deviation_percent=lop, right_deviation_percent=hip
+                    )
+                )
+                self.assertGreaterEqual(vs[-1], lo)
+                self.assertLessEqual(vs[-1], hi)
+            lovp = len([e for e in vs if e < v]) / len(vs)
+            hivp = len([e for e in vs if e > v]) / len(vs)
+            # print(len([e for e in vs if e < v]), len([e for e in vs if e > v]))
+            # print(lovp, hivp)
+            p = 1
+            self.assertAlmostEqual(hip / (lop + hip), hivp, places=p)
+            self.assertAlmostEqual(lop / (lop + hip), lovp, places=p)

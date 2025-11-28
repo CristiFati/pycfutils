@@ -4,6 +4,7 @@ import datetime
 import json
 import math
 import operator
+import random
 import sys
 import time
 from enum import Enum
@@ -249,6 +250,21 @@ def write_json_to_file(json_obj, file_name, newline="", indent=2):
         json.dump(json_obj, f, indent=indent)
 
 
+def randomize(
+    value: float,
+    left_deviation_percent: int = 10,
+    right_deviation_percent: int = 10,
+    round_result: bool = False,
+    round_digits: Optional[int] = None,
+) -> float:
+    if left_deviation_percent <= 0 and right_deviation_percent <= 0:
+        return round(value, ndigits=round_digits) if round_result else value
+    upper_dev = abs(value) * max(right_deviation_percent, 0) / 100
+    lower_dev = abs(value) * max(left_deviation_percent, 0) / 100
+    ret = random.uniform(value - lower_dev, value + upper_dev)
+    return round(ret, ndigits=round_digits) if round_result else ret
+
+
 __all__ = (
     "dimensions_2d",
     "int_format",
@@ -261,6 +277,7 @@ __all__ = (
     "timestamp_string",
     "uniques",
     "write_json_to_file",
+    "randomize",
 )
 
 

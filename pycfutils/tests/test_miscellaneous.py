@@ -1,6 +1,7 @@
 import contextlib
 import datetime
 import operator
+import os.path
 import random
 import time
 import unittest
@@ -420,3 +421,13 @@ class MiscellaneousTestCase(unittest.TestCase):
             p = 1
             self.assertAlmostEqual(hip / (lop + hip), hivp, places=p)
             self.assertAlmostEqual(lop / (lop + hip), lovp, places=p)
+
+    def test_call_stack_whoami(self):
+        this_file = os.path.abspath(__file__)
+        this = miscellaneous.whoami(depth=0)
+        self.assertEqual(this_file, this[0])
+        stack1 = miscellaneous.call_stack(depth=0, max_levels=1)
+        stack = miscellaneous.call_stack(depth=0, max_levels=0)
+        self.assertGreater(len(stack), len(stack1))
+        self.assertEqual(stack[-1], (stack1[-1][0], stack1[-1][1] + 1) + stack1[-1][2:])
+        self.assertEqual(this_file, stack[-1][0])

@@ -8,6 +8,7 @@ import random
 import sys
 import time
 from enum import Enum
+from pathlib import Path
 from pprint import pprint
 from typing import (
     Any,
@@ -265,7 +266,30 @@ def randomize(
     return round(ret, ndigits=round_digits) if round_result else ret
 
 
+def whoami(depth: int = 0) -> Tuple[str, int, str]:
+    frame = sys._getframe(depth + 1)
+    code = frame.f_code
+    p = Path(code.co_filename)
+    file = str(p.absolute()) if p.exists() else code.co_filename
+    return file, frame.f_lineno, code.co_name  # , code.co_firstlineno
+
+
+def call_stack(depth: int = 0, max_levels: int = 0) -> Tuple[Tuple[str, int, str]]:
+    ret = []
+    depth += 1
+    while True:
+        try:
+            ret.append(whoami(depth=depth))
+        except ValueError:
+            break
+        if 0 < max_levels <= depth:
+            break
+        depth += 1
+    return tuple(reversed(ret))
+
+
 __all__ = (
+    "call_stack",
     "dimensions_2d",
     "int_format",
     "merge_dicts",
@@ -273,11 +297,12 @@ __all__ = (
     "nested_dict_item",
     "pretty_print",
     "progression",
+    "randomize",
     "timed_execution",
     "timestamp_string",
     "uniques",
+    "whoami",
     "write_json_to_file",
-    "randomize",
 )
 
 

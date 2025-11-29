@@ -14,5 +14,8 @@ git add "${_VFILE}"
 git commit -m "build: bump version to ${_PYCFU_VER}"
 
 
+# Build:
+# python setup.py bdist_wheel  # sdist
+
 # Upload:
 # python -m twine upload dist/*

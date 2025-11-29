@@ -15,6 +15,7 @@ python -m pip install --upgrade pycfutils
 ## Usage example
 
 ```python
+import os
 import time
 
 import pycfutils.io
@@ -26,9 +27,21 @@ from pycfutils.exceptions import ModuleException, NetworkException
 print("Press a key in less than one second...")
 print(pycfutils.io.read_key(timeout=1))
 
-print(misc.timestamp_string(human_readable=True))
+print(misc.timestamp_string(human_readable=True, separator="T", microseconds=True))
 print(tuple(misc.progression(ratio=2)))
-print(misc.merge_dicts({1: 2}, misc.nest_object((1,), 3)))
+print(misc.merge_dicts({1: 2}, misc.nest_object((1,), 3)), misc.nested_dict_item({1: {2: 3}}, (1, 2)))
+print(misc.randomize(180, round_result=True))
+print(misc.call_stack())
+misc.pretty_print(
+    tuple(
+        misc.process_path_items(
+            path="${a_directory_with_few_child_items}",
+            processor=lambda arg: os.stat(arg).st_size,
+        )
+    ),
+    head="Path items:",
+    tail="",
+)
 
 @misc.timed_execution()
 def func(arg0, kw0=1):

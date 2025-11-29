@@ -22,7 +22,7 @@ or (if there's no PR / issue):
 
 Example:
 
-[TBR]
+[vTBR]
     - Issue reporting a bug
       https://github.com/CristiFati/pycfutils/issues/...
     - Untracked change (feature)
@@ -44,6 +44,22 @@ C         H         A         N        G        E         L         O         G
 
 
 [vTBR]
+
+[v2025.11.29]
+    - Add path items processor
+      @CristiFati, 251129
+    - Add whoami and call_stack
+      @CristiFati, 251128
+    - Improve pretty_print
+      @CristiFati, 251127
+    - Enhance manual test (Win)
+      @CristiFati, 251113
+    - Connect to server enhancement
+      @CristiFati, 251112
+    - JSON write function
+      @CristiFati, 251112
+    - Timestamp function improvement
+      @CristiFati, 251112
 
 [v2025.05.06]
     - Nix TIME_WAIT sockets workaround (gainarie)

@@ -1,8 +1,10 @@
 import contextlib
 import datetime
 import operator
-import os.path
+import os
+import pathlib
 import random
+import shutil
 import time
 import unittest
 from io import StringIO
@@ -12,6 +14,43 @@ from pycfutils import miscellaneous
 
 
 class MiscellaneousTestCase(unittest.TestCase):
+    def setUp(self):
+        self.this_file = str(pathlib.Path(__file__).absolute())
+        self.test_dir = pathlib.Path("test_dir")
+        self.test_dir_file_texts = [b"00", b"111", b"2222", b"33333"]
+        shutil.rmtree(self.test_dir, ignore_errors=True)
+        self.test_dir.mkdir(parents=True, exist_ok=True)
+        f00 = self.test_dir / ".00.txt"
+        f00.touch()
+        (self.test_dir / f"sl_{f00.parts[-1]}").symlink_to(f00.absolute())
+        with f00.open(mode="wb") as f:
+            f.write(self.test_dir_file_texts[0])
+        d00 = self.test_dir / "00"
+        d00.mkdir(parents=True, exist_ok=True)
+        (d00 / "sl_00_self").symlink_to(".", target_is_directory=True)
+        d0100 = self.test_dir / "01" / "00"
+        (d0100 / "00").mkdir(parents=True, exist_ok=True)
+        f010000 = d0100 / "00.txt"
+        f010000.touch()
+        with f010000.open(mode="wb") as f:
+            f.write(self.test_dir_file_texts[1])
+        d0200 = self.test_dir / "02" / "00"
+        d0200.mkdir(parents=True, exist_ok=True)
+        f020000 = d0200 / "00.txt"
+        f020000.touch()
+        with f020000.open(mode="wb") as f:
+            f.write(self.test_dir_file_texts[2])
+        f020001 = d0200 / "01.txt"
+        f020001.touch()
+        with f020001.open(mode="wb") as f:
+            f.write(self.test_dir_file_texts[3])
+        # Files and dirs under test_dir (included)
+        self.test_dir_dir_count = 8
+        self.test_dir_file_count = len(self.test_dir_file_texts) + 1
+
+    def tearDown(self):
+        shutil.rmtree(self.test_dir, ignore_errors=True)
+
     def test_dimensions_2d(self):
         self.assertEqual(miscellaneous.dimensions_2d(-3), (0, 0))
         self.assertEqual(miscellaneous.dimensions_2d(0), (0, 0))
@@ -423,11 +462,291 @@ class MiscellaneousTestCase(unittest.TestCase):
             self.assertAlmostEqual(lop / (lop + hip), lovp, places=p)
 
     def test_call_stack_whoami(self):
-        this_file = os.path.abspath(__file__)
         this = miscellaneous.whoami(depth=0)
-        self.assertEqual(this_file, this[0])
+        self.assertEqual(self.this_file, this[0])
         stack1 = miscellaneous.call_stack(depth=0, max_levels=1)
         stack = miscellaneous.call_stack(depth=0, max_levels=0)
         self.assertGreater(len(stack), len(stack1))
         self.assertEqual(stack[-1], (stack1[-1][0], stack1[-1][1] + 1) + stack1[-1][2:])
-        self.assertEqual(this_file, stack[-1][0])
+        self.assertEqual(self.this_file, stack[-1][0])
+
+    def test_process_items_in_path(self):
+
+        def exc_none(e):
+            print(e)
+
+        def exc_raise(e):
+            print(e)
+            raise e
+
+        def exc_raise_ni(e):
+            raise NotImplementedError(e)
+
+        def proc_raise_ni(path):
+            raise NotImplementedError(proc_raise_ni.__name__)
+
+        def proc_raise_ni_kwarg(path, processor=None):
+            if processor is None:
+                raise NotImplementedError(proc_raise_ni_kwarg.__name__)
+
+        def proc_args(file_list, misleading_arg_name, dummy_kwarg=None):
+            if dummy_kwarg is None:
+                raise NotImplementedError(proc_args.__name__)
+            file_list.append(misleading_arg_name)
+
+        def flt_proc_raise_ni(path):
+            raise NotImplementedError(flt_proc_raise_ni.__name__)
+
+        def flt_trav_raise_ni_noarg(path):
+            raise NotImplementedError(flt_trav_raise_ni_noarg.__name__)
+
+        def flt_trav_raise_ni(path, level):
+            raise NotImplementedError(flt_trav_raise_ni.__name__)
+
+        pinv = pathlib.Path(str(self.test_dir) + "invalid")
+        res = tuple(
+            miscellaneous.process_path_items(
+                path=pinv,
+                processor=lambda arg: None,
+            )
+        )
+        self.assertEqual(res, ())
+        res = tuple(
+            miscellaneous.process_path_items(
+                path=pinv,
+                processor=lambda arg: None,
+                exception_handler=exc_none,
+            )
+        )
+        self.assertEqual(res, ())
+        res = miscellaneous.process_path_items(
+            path=pinv,
+            processor=lambda arg: None,
+            exception_handler=exc_raise,
+        )
+        with self.assertRaises(OSError):
+            tuple(res)
+        res = miscellaneous.process_path_items(
+            path=pinv,
+            processor=lambda arg: None,
+            exception_handler=exc_raise_ni,
+        )
+        with self.assertRaises(NotImplementedError):
+            tuple(res)
+        res = miscellaneous.process_path_items(
+            path=self.test_dir,
+            processor=proc_raise_ni,
+            exception_handler=exc_raise,
+        )
+        with self.assertRaises(NotImplementedError):
+            tuple(res)
+        res = miscellaneous.process_path_items(
+            path=self.test_dir,
+            processor=lambda arg: None,
+            processing_filter=flt_proc_raise_ni,
+            exception_handler=exc_raise,
+        )
+        with self.assertRaises(NotImplementedError):
+            tuple(res)
+        res = miscellaneous.process_path_items(
+            path=self.test_dir,
+            processor=lambda arg: None,
+            traversing_filter=flt_trav_raise_ni_noarg,
+            exception_handler=exc_raise,
+        )
+        with self.assertRaises(TypeError):
+            tuple(res)
+        res = miscellaneous.process_path_items(
+            path=self.test_dir,
+            processor=lambda arg: None,
+            traversing_filter=flt_trav_raise_ni,
+            exception_handler=exc_raise,
+        )
+        with self.assertRaises(NotImplementedError):
+            tuple(res)
+        res = miscellaneous.process_path_items(
+            path=self.test_dir,
+            processor=proc_raise_ni_kwarg,
+            exception_handler=exc_raise,
+        )
+        with self.assertRaises(NotImplementedError):
+            tuple(res)
+        res = miscellaneous.process_path_items(
+            path=self.test_dir,
+            processor=lambda arg: None,
+            processor_path_argument_target="notexisting",
+            exception_handler=exc_raise,
+        )
+        with self.assertRaises(ValueError):
+            tuple(res)
+        res = miscellaneous.process_path_items(
+            path=self.test_dir,
+            processor=lambda arg: None,
+            processor_path_argument_target=1000,
+            exception_handler=exc_raise,
+        )
+        with self.assertRaises(IndexError):
+            tuple(res)
+        res = miscellaneous.process_path_items(
+            path=self.test_dir,
+            processor=lambda arg: None,
+            processor_path_argument_target=("Invalid type",),
+            exception_handler=exc_raise,
+        )
+        with self.assertRaises(TypeError):
+            tuple(res)
+        res = miscellaneous.process_path_items(
+            path=self.test_dir,
+            processor=lambda: None,
+            exception_handler=exc_raise,
+        )
+        with self.assertRaises(TypeError):
+            tuple(res)
+        res = miscellaneous.process_path_items(
+            path=self.test_dir,
+            processor=proc_args,
+            processor_path_argument_target="misleading_arg_name",
+            exception_handler=exc_raise,
+        )
+        with self.assertRaises(TypeError):
+            tuple(res)
+        items = []
+        res = miscellaneous.process_path_items(
+            path=self.test_dir,
+            processor=proc_args,
+            processor_path_argument_target="misleading_arg_name",
+            exception_handler=exc_raise,
+            file_list=items,
+        )
+        with self.assertRaises(NotImplementedError):
+            tuple(res)
+        items = []
+        # Can't use *args here
+        res = miscellaneous.process_path_items(
+            self.test_dir,
+            proc_args,
+            items,
+            "Not None",
+            processor_path_argument_target="misleading_arg_name",
+            exception_handler=exc_raise,
+        )
+        with self.assertRaises(TypeError):
+            tuple(res)
+        items = []
+        res = tuple(
+            miscellaneous.process_path_items(
+                path=self.test_dir,
+                processor=proc_args,
+                processor_path_argument_target="misleading_arg_name",
+                exception_handler=exc_raise,
+                file_list=items,
+                dummy_kwarg="Not None",
+            )
+        )
+        item_count = self.test_dir_dir_count + self.test_dir_file_count
+        self.assertEqual(len(items), item_count)
+        self.assertEqual(len(items), len(res))
+        items = []
+        res = tuple(
+            miscellaneous.process_path_items(
+                path=self.test_dir,
+                processor=proc_args,
+                processor_path_argument_target=1,
+                exception_handler=exc_raise,
+                file_list=items,
+                dummy_kwarg="Not None",
+            )
+        )
+        self.assertEqual(len(items), item_count)
+        self.assertEqual(len(items), len(res))
+        res = tuple(
+            miscellaneous.process_path_items(
+                path=self.test_dir,
+                processor=lambda arg: None,
+                exception_handler=exc_raise,
+            )
+        )
+        self.assertEqual(item_count, len(res))
+        res = tuple(
+            miscellaneous.process_path_items(
+                path=str(self.test_dir),
+                processor=lambda arg: None,
+                exception_handler=exc_raise,
+            )
+        )
+        self.assertEqual(item_count, len(res))
+        res = tuple(
+            miscellaneous.process_path_items(
+                path=self.test_dir,
+                processor=lambda arg: None,
+                processing_filter=lambda arg: arg.is_dir(),
+                exception_handler=exc_raise,
+            )
+        )
+        self.assertEqual(self.test_dir_dir_count, len(res))
+        res = tuple(
+            miscellaneous.process_path_items(
+                path=self.test_dir,
+                processor=lambda arg: None,
+                processing_filter=lambda arg: arg.is_file(),
+                exception_handler=exc_raise,
+            )
+        )
+        self.assertEqual(self.test_dir_file_count, len(res))
+        res = tuple(
+            miscellaneous.process_path_items(
+                path=self.test_dir,
+                processor=lambda arg: None,
+                traversing_filter=lambda arg0, arg1: arg1 < 1,
+                exception_handler=exc_raise,
+            )
+        )
+        self.assertEqual(1, len(res))
+        res = tuple(
+            miscellaneous.process_path_items(
+                path=self.test_dir,
+                processor=lambda arg: None,
+                processing_filter=lambda arg: arg.is_file(),
+                traversing_filter=lambda arg0, arg1: arg1 < 2,
+                exception_handler=exc_raise,
+            )
+        )
+        self.assertEqual(2, len(res))
+        res = tuple(
+            miscellaneous.process_path_items(
+                path=self.test_dir,
+                processor=lambda arg: None,
+                processing_filter=lambda arg: arg.is_dir(),
+                traversing_filter=lambda arg0, arg1: not arg0.is_symlink() and arg1 < 3,
+                exception_handler=exc_raise,
+            )
+        )
+        self.assertEqual(7, len(res))
+        res = tuple(
+            miscellaneous.process_path_items(
+                path=self.test_dir,
+                processor=lambda arg: os.stat(arg).st_size,
+                processing_filter=lambda arg: arg.is_file(),
+                exception_handler=exc_raise,
+            )
+        )
+        self.assertEqual(
+            sum(e[1] for e in res),
+            sum(len(e) for e in self.test_dir_file_texts)
+            + len(self.test_dir_file_texts[0]),
+        )
+        if 0:
+            # No recursion error ???
+            res = tuple(
+                miscellaneous.process_path_items(
+                    path=self.test_dir,
+                    processor=lambda arg: None,
+                    processing_filter=lambda arg: arg.is_dir(),
+                    traversing_filter=lambda arg0, arg1: True,
+                    exception_handler=exc_raise,
+                )
+            )
+            print(res, len(res))
+
+            p = os.path.abspath(max((e[0] for e in res), key=len))
+            print(len(p), len(p.split("\\")))

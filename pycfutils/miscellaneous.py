@@ -1,9 +1,11 @@
 import calendar
 import copy
 import datetime
+import inspect
 import json
 import math
 import operator
+import os
 import random
 import sys
 import time
@@ -14,6 +16,7 @@ from typing import (
     Any,
     Callable,
     Dict,
+    Generator,
     Iterable,
     Optional,
     Reversible,
@@ -288,7 +291,124 @@ def call_stack(depth: int = 0, max_levels: int = 0) -> Tuple[Tuple[str, int, str
     return tuple(reversed(ret))
 
 
+def _bind_arguments_to_callable(
+    callable_: Callable,
+    *callable_args,
+    callable_path_argument_target: Optional[Union[str, int]] = None,
+    **callable_kwargs,
+) -> Tuple[inspect.BoundArguments, str]:
+    # print("++++++", callable_, callable_path_argument_target, callable_args, callable_kwargs)
+    sig = inspect.signature(callable_)
+    params = tuple(sig.parameters.items())
+    if isinstance(callable_path_argument_target, str):
+        if callable_path_argument_target not in sig.parameters:
+            raise ValueError(
+                f"Callable has no parameter named '{callable_path_argument_target}'"
+            )
+        path_argument_target = callable_path_argument_target
+    elif isinstance(callable_path_argument_target, int):
+        real_params = tuple(
+            name
+            for name, p in params
+            if p.kind not in (p.VAR_POSITIONAL, p.VAR_KEYWORD)
+        )
+        if callable_path_argument_target < 0 or callable_path_argument_target >= len(
+            real_params
+        ):
+            raise IndexError("Callable path argument index out of range")
+        path_argument_target = real_params[callable_path_argument_target]
+    elif callable_path_argument_target is None:
+        for name, p in params:
+            if p.kind not in (p.VAR_POSITIONAL, p.VAR_KEYWORD):
+                path_argument_target = name
+                break
+        else:
+            raise TypeError("No valid argument found for path")
+    else:
+        raise TypeError("Callable path argument target must be str, int, or None")
+    bound = sig.bind_partial(*callable_args, **callable_kwargs)
+    return bound, path_argument_target
+
+
+def _process_path_items(
+    path: Path,
+    processor: Callable[..., Any],
+    processor_bound_arguments: inspect.BoundArguments,
+    processor_path_argument_target: str,
+    processing_filter: Callable[[Path], bool],
+    traversing_filter: Callable[[Path, int], bool],
+    exception_handler: Optional[Callable[[Exception], None]],
+    level: int,
+) -> Generator:
+    try:
+        if processing_filter(path):
+            processor_bound_arguments.arguments[processor_path_argument_target] = path
+            yield str(path), processor(
+                *processor_bound_arguments.args,
+                **processor_bound_arguments.kwargs,
+            )
+        if path.is_dir() and traversing_filter(path, level):
+            for item in path.glob("*"):
+                yield from _process_path_items(
+                    path=Path(item),
+                    processor=processor,
+                    processor_bound_arguments=processor_bound_arguments,
+                    processor_path_argument_target=processor_path_argument_target,
+                    processing_filter=processing_filter,
+                    traversing_filter=traversing_filter,
+                    exception_handler=exception_handler,
+                    level=level + 1,
+                )
+    except Exception as e:
+        if exception_handler:
+            exception_handler(e)
+
+
+def process_path_items(
+    path: Union[str, bytes, os.PathLike],
+    processor: Callable[..., Any],
+    *processor_args,
+    processor_path_argument_target: Optional[Union[str, int]] = None,
+    processing_filter: Callable[[Path], bool] = lambda arg: True,
+    traversing_filter: Callable[[Path, int], bool] = lambda arg0, arg1: not (
+        arg0.is_symlink() and arg0.is_dir()
+    ),
+    exception_handler: Optional[Callable[[Exception], None]] = None,
+    **processor_kwargs,
+) -> Generator:
+    # print("++++++", path, processor, processor_path_argument_target, processing_filter, traversing_filter, exception_handler, processor_args, processor_kwargs)
+    if not isinstance(path, Path):
+        path = Path(path)
+    if not path.exists():
+        if exception_handler:
+            exception_handler(OSError("Path does not exist"))
+        return None
+    try:
+        bound_args, path_target = _bind_arguments_to_callable(
+            *processor_args,
+            callable_=processor,
+            callable_path_argument_target=processor_path_argument_target,
+            **processor_kwargs,
+        )
+    except Exception as e:
+        if exception_handler:
+            exception_handler(e)
+        return None
+    else:
+        yield from _process_path_items(
+            path=path,
+            processor=processor,
+            processor_bound_arguments=bound_args,
+            processor_path_argument_target=path_target,
+            processing_filter=processing_filter,
+            traversing_filter=traversing_filter,
+            exception_handler=exception_handler,
+            level=1,  # Item processed before depth check
+        )
+
+
 __all__ = (
+    "process_path_items",
     "call_stack",
     "dimensions_2d",
     "int_format",

@@ -28,8 +28,11 @@ print("Press a key in less than one second...")
 print(pycfutils.io.read_key(timeout=1))
 
 print(misc.timestamp_string(human_readable=True, separator="T", microseconds=True))
-print(tuple(misc.progression(ratio=2)))
-print(misc.merge_dicts({1: 2}, misc.nest_object((1,), 3)), misc.nested_dict_item({1: {2: 3}}, (1, 2)))
+print(tuple(misc.progression(ratio=2, count=20)))
+print(
+    misc.merge_dicts({1: 2}, misc.nest_object((1,), 3)),
+    misc.nested_dict_item({1: {2: 3}}, (1, 2)),
+)
 print(misc.randomize(180, round_result=True))
 print(misc.call_stack())
 misc.pretty_print(
@@ -43,10 +46,12 @@ misc.pretty_print(
     tail="",
 )
 
+
 @misc.timed_execution()
 def func(arg0, kw0=1):
     time.sleep(0.2)
     return 5
+
 
 func("123")
 
@@ -57,7 +62,8 @@ except NetworkException as e:
 
 pycfutils.system.cpu_stress(3)
 
-# --- Requires PyGObject (also might take some time to complete) ---
+# --- REQUIRES PyGObject (python -m pip install PyGObject) ---
+# --- Also, might take some time to complete ---
 try:
     from pycfutils.gstreamer import RegistryAccess
 except ModuleException as e:
@@ -72,9 +78,12 @@ import pycfutils.gui
 print(pycfutils.gui.message_box("Title", "Text to display", x=320, y=200))
 ```
 
-#### Functionality to build a *\*.dll* (*\*.so*) with *SetupTools*. Parts of *setup.py*:
+#### Functionality to build a *\*.dll* (*\*.so*) with *SetupTools*.
+
+Parts of *setup.py*:
 
 ```python
+# --- REQUIRES SetupTools (python -m pip install setuptools) for Python >= v3.12 ---
 from setuptools import setup
 
 from pycfutils.setup.command.build_clibdll import build_clibdll
@@ -83,12 +92,15 @@ from pycfutils.setup.command.install_platlib import install_platlib  # Optional
 dll = (
     "dll_name",
     {
-        "sources": ["src0.c", "src1.c", ],
+        "sources": [
+            "src0.c",
+            "src1.c",
+        ],
         # ...
         "dll": True,  # False (or nothing) for regular (static) library
         "copy_files": {  # Optional (copy artifacts)
             "dll_name.so": "pkg_name",  #  dll_name.dll on Win
-        }
+        },
         # ...
     },
 )
@@ -106,7 +118,9 @@ setup(
 )
 ```
 
-#### There are also some useful (*CLI* wrapper) scripts in the *tools* folder. Example:
+#### Some useful (*CLI* wrapper) scripts (in the *tools* folder)
+
+Example:
 
 - *Nix*:
 
@@ -129,7 +143,8 @@ Or run them as modules (e.g. in 2 separate terminals). Example (*Shell* snippets
     ```shell
     python -m pycfutils.tools.connect_to_server -a 127.0.0.1 -p 16180
 
-    # Go to the other terminal and run the other command (start the server), then come back and re-run the previous command
+    # Go to the other terminal and run the other command (start the server),
+    #   then come back and re-run the previous command
 
     python -m pycfutils.tools.connect_to_server -a 127.0.0.1 -p 16180
     ```
@@ -139,3 +154,12 @@ Or run them as modules (e.g. in 2 separate terminals). Example (*Shell* snippets
     ```shell
     python -m pycfutils.tools.start_server -a 127.0.0.1 -p 16180
     ```
+
+## Notes
+
+- Package has no (global) dependencies (from outside *Python* standard library).<br>
+  However, some of its (niche - more or less) subpackages have their requirements:
+    - ***pycfutils.gstreamer***:
+        - ***PyGObject*** (`python -m pip install PyGObject`)
+    - ***pycfutils.setup.command***:
+        - ***SetupTools*** (`python -m pip install setuptools`) for *Python* >= *v3.12*

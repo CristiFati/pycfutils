@@ -503,9 +503,11 @@ class MiscellaneousTestCase(unittest.TestCase):
 
     def test_call_stack_whoami(self):
         this = miscellaneous.whoami(depth=0)
+        self.assertEqual(len(this), 3)
+        self.assertEqual(len(miscellaneous.whoami(depth=0, first_line_number=True)), 4)
         self.assertEqual(self.this_file, this[0])
-        stack1 = miscellaneous.call_stack(depth=0, max_levels=1)
-        stack = miscellaneous.call_stack(depth=0, max_levels=0)
+        stack1 = miscellaneous.call_stack(max_levels=1, depth=0)
+        stack = miscellaneous.call_stack(max_levels=0, depth=0)
         self.assertGreater(len(stack), len(stack1))
         self.assertEqual(stack[-1], (stack1[-1][0], stack1[-1][1] + 1) + stack1[-1][2:])
         self.assertEqual(self.this_file, stack[-1][0])

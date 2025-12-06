@@ -37,17 +37,12 @@ class DictMergeOverlapPolicy(Enum):
 
 Numeric = Union[int, float]
 
-if sys.version_info[:2] >= (3, 9):
-    TimestampStringCallable = Callable[[Any, ...], datetime.datetime]
-else:
-    TimestampStringCallable = Callable[..., datetime.datetime]
 
-
-def dimensions_2d(n: int) -> Tuple:
-    if n <= 0:
+def dimensions_2d(value: int) -> Tuple:
+    if value <= 0:
         return 0, 0
-    sq = round(math.sqrt(n))
-    return sq, math.ceil(n / sq)
+    sq = round(math.sqrt(value))
+    return sq, math.ceil(value / sq)
 
 
 def int_format(limit: int) -> str:
@@ -271,15 +266,18 @@ def randomize(
     return round(ret, ndigits=round_digits) if round_result else ret
 
 
-def whoami(depth: int = 0) -> Tuple[str, int, str]:
+def whoami(depth: int = 0, first_line_number: bool = False) -> Tuple[str, int, str]:
     frame = sys._getframe(depth + 1)
     code = frame.f_code
     p = Path(code.co_filename)
     file = str(p.absolute()) if p.exists() else code.co_filename
-    return file, frame.f_lineno, code.co_name  # , code.co_firstlineno
+    ret = file, frame.f_lineno, code.co_name
+    if first_line_number:
+        ret += (code.co_firstlineno,)
+    return ret
 
 
-def call_stack(depth: int = 0, max_levels: int = 0) -> Tuple[Tuple[str, int, str]]:
+def call_stack(max_levels: int = 0, depth: int = 0) -> Tuple[Tuple[str, int, str]]:
     ret = []
     depth += 1
     while True:

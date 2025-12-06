@@ -83,6 +83,8 @@ class MiscellaneousTestCase(unittest.TestCase):
     def test_timestamp_string(self):
         ts = (2024, 5, 6, 12, 34, 56)
         us = (7890,)
+        self.assertTrue(miscellaneous.timestamp_string(datetime.datetime.now()))
+        self.assertEqual(miscellaneous.timestamp_string(""), "")
         self.assertEqual(
             miscellaneous.timestamp_string(timestamp=ts, human_readable=False),
             "20240506123456",
@@ -109,7 +111,7 @@ class MiscellaneousTestCase(unittest.TestCase):
             miscellaneous.timestamp_string(
                 timestamp=ts,
                 human_readable=False,
-                local=True,
+                local_auto_timezone=True,
             ),
             "20240506123456",
         )
@@ -127,7 +129,7 @@ class MiscellaneousTestCase(unittest.TestCase):
             miscellaneous.timestamp_string(
                 timestamp=datetime.datetime(*ts),
                 human_readable=False,
-                local=True,
+                local_auto_timezone=True,
             ),
             "20240506123456",
         )
@@ -136,7 +138,7 @@ class MiscellaneousTestCase(unittest.TestCase):
             miscellaneous.timestamp_string(
                 timestamp=ts,
                 human_readable=False,
-                local=False,
+                local_auto_timezone=False,
             ),
             "20251112210353",
         )
@@ -145,7 +147,7 @@ class MiscellaneousTestCase(unittest.TestCase):
                 timestamp=ts,
                 human_readable=False,
                 microseconds=True,
-                local=False,
+                local_auto_timezone=False,
             ),
             "20251112210353405951",
         )
@@ -154,63 +156,101 @@ class MiscellaneousTestCase(unittest.TestCase):
                 timestamp=int(ts),
                 human_readable=False,
                 microseconds=True,
-                local=False,
+                local_auto_timezone=False,
             ),
             "20251112210353000000",
         )
-        self.assertEqual(
-            miscellaneous.timestamp_string(
-                timestamp=str(int(ts)),
-                human_readable=False,
-                microseconds=True,
-                local=False,
-                convert_function=lambda arg, *args: datetime.datetime.fromtimestamp(
-                    int(arg, args[0]),
-                    tz=args[1],
-                ),
-                convert_function_extra_args=(10, datetime.timezone.utc),
-            ),
-            "20251112210353000000",
-        )
-        ts = datetime.datetime.now()
+        ts = time.time()
+        dtu = datetime.datetime.fromtimestamp(ts, tz=datetime.timezone.utc)
+        dtl = datetime.datetime.fromtimestamp(ts).astimezone()
         self.assertEqual(
             miscellaneous.timestamp_string(
                 timestamp=ts,
-                separator="T",
                 human_readable=True,
+                separator="T",
                 microseconds=True,
-                local=True,
+                timezone=True,
+                local_auto_timezone=False,
             ),
-            ts.isoformat(),
+            dtu.isoformat(),
         )
-        ts = time.time()
-        if time.gmtime(ts) == time.localtime(ts):
-            self.assertEqual(
-                miscellaneous.timestamp_string(
-                    timestamp=ts,
-                    human_readable=False,
-                    local=False,
-                ),
-                miscellaneous.timestamp_string(
-                    timestamp=ts,
-                    human_readable=False,
-                    local=True,
-                ),
-            )
-        else:
-            self.assertNotEqual(
-                miscellaneous.timestamp_string(
-                    timestamp=ts,
-                    human_readable=False,
-                    local=False,
-                ),
-                miscellaneous.timestamp_string(
-                    timestamp=ts,
-                    human_readable=False,
-                    local=True,
-                ),
-            )
-        self.assertTrue(miscellaneous.timestamp_string(datetime.datetime.now()))
+        self.assertEqual(
+            miscellaneous.timestamp_string(
+                timestamp=ts,
+                human_readable=True,
+                separator="T",
+                microseconds=True,
+                timezone=True,
+                local_auto_timezone=True,
+            ),
+            dtl.isoformat(),
+        )
+        self.assertEqual(
+            miscellaneous.timestamp_string(
+                human_readable=True,
+                separator="T",
+                microseconds=True,
+                timezone=True,
+                local_auto_timezone=False,
+                timezone_offset_minutes=-1440,
+            )[-6:],
+            "-12:00",
+        )
+        self.assertEqual(
+            miscellaneous.timestamp_string(
+                human_readable=True,
+                separator="T",
+                microseconds=True,
+                timezone=True,
+                local_auto_timezone=False,
+                timezone_offset_minutes=1440,
+            )[-6:],
+            "+10:00",
+        )
+        self.assertEqual(
+            miscellaneous.timestamp_string(
+                human_readable=True,
+                separator="T",
+                microseconds=True,
+                timezone=True,
+                local_auto_timezone=False,
+                timezone_offset_minutes=45,
+            )[-6:],
+            "+01:00",
+        )
+        self.assertEqual(
+            miscellaneous.timestamp_string(
+                human_readable=True,
+                separator="T",
+                microseconds=True,
+                timezone=True,
+                local_auto_timezone=False,
+                timezone_offset_minutes=44,
+            )[-6:],
+            "+00:30",
+        )
+        self.assertEqual(
+            miscellaneous.timestamp_string(
+                human_readable=True,
+                separator="T",
+                microseconds=True,
+                timezone=True,
+                local_auto_timezone=False,
+                timezone_offset_minutes=-45,
+            )[-6:],
+            "-01:00",
+        )
+        self.assertEqual(
+            miscellaneous.timestamp_string(
+                human_readable=True,
+                separator="T",
+                microseconds=True,
+                timezone=True,
+                local_auto_timezone=False,
+                timezone_offset_minutes=-44,
+            )[-6:],
+            "-00:30",
+        )
 
     def test_uniques(self):
         l0 = [1, 2, 3, 1, 4, 3, 5, 1, 1, 2, 6, 0, 0]

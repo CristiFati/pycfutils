@@ -63,33 +63,35 @@ def timestamp_string(
     separator: str = " ",
     microseconds: bool = False,
     timezone: bool = False,
-    local: bool = False,
-    # Convert to datetime.datetime
-    convert_function: TimestampStringCallable = lambda arg, *args: arg,
-    convert_function_extra_args: Tuple = (),
+    local_auto_timezone: bool = False,  # Or UTC
+    timezone_offset_minutes=0,  # Will not alter the actual time
 ) -> str:
-    tz = None if local else datetime.timezone.utc
+    tz = None if local_auto_timezone else datetime.timezone.utc
     if timestamp is None:
         tm = datetime.datetime.now(tz=tz)
     elif isinstance(timestamp, (int, float)):
         tm = datetime.datetime.fromtimestamp(timestamp, tz=tz)
     elif isinstance(timestamp, time.struct_time):
-        convert_func = time.mktime if local else calendar.timegm
+        convert_func = time.mktime if local_auto_timezone else calendar.timegm
         tm = datetime.datetime.fromtimestamp(convert_func(timestamp), tz=tz)
     elif isinstance(timestamp, (tuple, list)):
         tm = datetime.datetime(*timestamp, tzinfo=tz)
-    elif callable(convert_function):
-        tm = convert_function(timestamp, *convert_function_extra_args)
-    else:
+    elif isinstance(timestamp, datetime.datetime):
         tm = timestamp
+    else:
+        return ""
     if timezone:
         if tm.tzinfo is None:
             tm = tm.astimezone(tz=tz)
         secs = tm.tzinfo.utcoffset(None).seconds
-        negative = True if secs < 0 else False
-        tz_info = divmod(divmod(abs(secs), 60)[0], 60)
-        if negative:
-            tz_info = -tz_info[0], tz_info[1]
+        if timezone_offset_minutes:
+            negative = True if timezone_offset_minutes < 0 else False
+            max_mins = 720 if negative else 840
+            offset = abs(timezone_offset_minutes) % max_mins
+            offset = round((offset or max_mins) / 30) * 30
+            secs += offset * 60 * (-1 if negative else 1)
+        negative = secs < 0
+        tz_info = (negative,) + divmod(divmod(abs(secs), 60)[0], 60)
     else:
         tz_info = None
     if human_readable:
@@ -103,8 +105,8 @@ def timestamp_string(
         )
         if microseconds:
             ret = f"{ret}.{tm.microsecond:06d}"
-        if tz_info:
-            ret = f"{ret}{tz_info[0]:+03d}:{tz_info[1]:02d}"
+        if tz_info is not None:
+            ret = f"{ret}{'-' if tz_info[0] else '+'}{tz_info[1]:02d}:{tz_info[2]:02d}"
     else:
         ret = (
             f"{tm.year:04d}{tm.month:02d}{tm.day:02d}"

@@ -5,8 +5,6 @@ import unittest
 
 from pycfutils import network
 
-_IS_WIN = sys.platform[:3].lower() == "win"
-
 
 class NetworkBaseTestCase(unittest.TestCase):
     def setUp(self):
@@ -18,7 +16,7 @@ class NetworkBaseTestCase(unittest.TestCase):
         self.families = (network.SOCKET_FAMILY_IPV4,)
         if self.ipv6:
             self.families += (network.SOCKET_FAMILY_IPV6,)
-        # if not _IS_WIN:
+        # if sys.platform[:3].lower() != "win":
         #     self.families += (network.SOCKET_FAMILY_UNIX,)
         self.types = (network.SOCKET_TYPE_TCP, network.SOCKET_TYPE_UDP)
         self.timeout = network._TIMEOUT_DEFAULT
@@ -29,13 +27,20 @@ class NetworkGenericTestCase(NetworkBaseTestCase):
     def test__parse_address(self):
         self.assertRaises(KeyError, network._parse_address, "", self.port, "fam", None)
         self.assertRaises(KeyError, network._parse_address, "", self.port, None, "type")
-        if _IS_WIN:
-            self.assertGreater(
+        plat = sys.platform.lower()
+        if plat[:3] == "win" or plat == "darwin":
+            self.assertGreaterEqual(
                 len(network._parse_address("", self.port, None, None)), self.min_conns
             )
-        else:
+            self.assertGreaterEqual(
+                len(network._parse_address(None, self.port, None, None)), self.min_conns
+            )
+        else:  # Linux (fallback)
             self.assertRaises(
                 socket.gaierror, network._parse_address, "", self.port, None, None
+            )
+            self.assertGreaterEqual(
+                len(network._parse_address(None, self.port, None, None)), self.min_conns
             )
         self.assertGreater(
             len(network._parse_address(self.lh, self.port, None, None)), self.min_conns

@@ -81,7 +81,7 @@ def _close_socket(sock, method: Optional[int] = socket.SHUT_RDWR) -> int:
 
 
 def _parse_address(
-    address: AnyStr,
+    address: Optional[AnyStr],
     port: int,
     family: Optional[AnyStr],
     type_: Optional[AnyStr],
@@ -96,7 +96,7 @@ def _parse_address(
 
 
 def parse_address(
-    address: AnyStr,
+    address: Optional[AnyStr],
     port: int = 0,
     family: Optional[AnyStr] = None,
     type_: Optional[AnyStr] = None,

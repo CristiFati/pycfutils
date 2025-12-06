@@ -18,6 +18,7 @@ python -m pip install --upgrade pycfutils
 import os
 import time
 
+import pycfutils.ctypes
 import pycfutils.io
 import pycfutils.miscellaneous as misc
 import pycfutils.network
@@ -26,6 +27,8 @@ from pycfutils.exceptions import ModuleException, NetworkException
 
 print("Press a key in less than one second...")
 print(pycfutils.io.read_key(timeout=1))
+
+print(pycfutils.ctypes.endianness())
 
 print(misc.timestamp_string(human_readable=True, separator="T", microseconds=True))
 print(tuple(misc.progression(ratio=2, count=20)))

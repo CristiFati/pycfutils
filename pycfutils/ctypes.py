@@ -1,4 +1,5 @@
 import ctypes
+import enum
 import sys
 from typing import Any, Optional
 
@@ -6,6 +7,29 @@ try:
     _CLS_CDATA = ctypes.c_int.__mro__[-2]
 except Exception:
     _CLS_CDATA = None
+
+
+class Endian(enum.IntEnum):
+    UNKNOWN = 0
+    BIG = 1
+    LITTLE = 2
+
+
+def endianness() -> "Endian":
+
+    class _U(ctypes.Union):
+        _fields_ = (
+            ("b4", ctypes.c_uint8 * 4),
+            ("dw", ctypes.c_uint32),
+        )
+
+    u = _U()
+    u.dw = 0x00010203
+    if u.b4[0] == 0x00 and u.b4[1] == 0x01 and u.b4[2] == 0x02 and u.b4[3] == 0x03:
+        return Endian.BIG
+    elif u.b4[0] == 0x03 and u.b4[1] == 0x02 and u.b4[2] == 0x01 and u.b4[3] == 0x00:
+        return Endian.LITTLE
+    return Endian.UNKNOWN
 
 
 def _to_string(

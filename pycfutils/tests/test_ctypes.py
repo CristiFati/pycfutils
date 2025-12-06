@@ -32,3 +32,7 @@ class CTypesTestCase(unittest.TestCase):
         # print(s)
         self.assertIn("-32", s)
         self.assertIn("dummy text", s)
+
+    def test_indianness(self):
+        # Dummy test (too much of a hassle to determine which archs are B/L)
+        self.assertIn(ctypes.endianness(), (ctypes.Endian.BIG, ctypes.Endian.LITTLE))

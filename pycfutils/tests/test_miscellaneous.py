@@ -6,6 +6,7 @@ import pathlib
 import random
 import shutil
 import time
+import types
 import unittest
 from io import StringIO
 from unittest import mock
@@ -792,3 +793,44 @@ class MiscellaneousTestCase(unittest.TestCase):
 
             p = os.path.abspath(max((e[0] for e in res), key=len))
             print(len(p), len(p.split("\\")))
+
+    def test_object_items(self):
+        misc_names = dir(miscellaneous)
+        none_names = dir(None)
+        res = miscellaneous.object_items(miscellaneous, modules_only=True)
+        self.assertEqual(len(misc_names), len(res))
+        res = miscellaneous.object_items(miscellaneous, modules_only=False)
+        self.assertEqual(len(misc_names), len(res))
+        res = miscellaneous.object_items(None, modules_only=False)
+        self.assertEqual(len(none_names), len(res))
+        self.assertIsNone(miscellaneous.object_items(None, modules_only=True))
+        res = miscellaneous.object_items(
+            miscellaneous, name_filter_function=lambda arg: arg == "object_items"
+        )
+        self.assertEqual(1, len(res))
+        res = miscellaneous.object_items(
+            miscellaneous,
+            name_filter_function=lambda arg: arg in ("object_items", "whoami"),
+        )
+        self.assertEqual(2, len(res))
+        res = miscellaneous.object_items(
+            miscellaneous,
+            name_filter_function=lambda arg: arg in (f"_invalid_{e}0_" for e in (0, 1)),
+        )
+        self.assertEqual((), res)
+        res = miscellaneous.object_items(
+            miscellaneous, item_filter_function=lambda arg: arg == "_invalid_"
+        )
+        self.assertEqual((), res)
+        res = miscellaneous.object_items(
+            miscellaneous,
+            name_filter_function=lambda arg: arg in ("object_items", "whoami"),
+            item_filter_function=lambda arg: callable(arg),
+        )
+        self.assertEqual(2, len(res))
+        res = miscellaneous.object_items(
+            miscellaneous,
+            name_filter_function=lambda arg: "object_items" in arg,
+            item_filter_function=lambda arg: type(arg) is types.FunctionType,
+        )
+        self.assertEqual((miscellaneous.object_items,), res)

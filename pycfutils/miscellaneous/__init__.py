@@ -5,10 +5,10 @@ import inspect
 import json
 import math
 import operator
-import os
 import random
 import sys
 import time
+import types
 from enum import Enum
 from pathlib import Path
 from pprint import pprint
@@ -24,6 +24,8 @@ from typing import (
     Tuple,
     Union,
 )
+
+from pycfutils import common
 
 
 class DictMergeOverlapPolicy(Enum):
@@ -365,7 +367,7 @@ def _process_path_items(
 
 
 def process_path_items(
-    path: Union[str, bytes, os.PathLike],
+    path: common.PathLike,
     processor: Callable[..., Any],
     *processor_args,
     processor_path_argument_target: Optional[Union[str, int]] = None,
@@ -407,15 +409,34 @@ def process_path_items(
         )
 
 
+def object_items(
+    object_: Any,
+    name_filter_function: common.StringFilter = lambda arg: True,
+    item_filter_function: common.GenericFilter = lambda arg: True,
+    modules_only: bool = True,
+) -> Optional[common.GenericTuple]:
+    if modules_only and type(object_) is not types.ModuleType:
+        return None
+    ret = []
+    for name in dir(object_):
+        if not name_filter_function(name):
+            continue
+        item = getattr(object_, name)
+        if item_filter_function(item):
+            ret.append(item)
+    return tuple(ret)
+
+
 __all__ = (
-    "process_path_items",
     "call_stack",
     "dimensions_2d",
     "int_format",
     "merge_dicts",
     "nest_object",
     "nested_dict_item",
+    "object_items",
     "pretty_print",
+    "process_path_items",
     "progression",
     "randomize",
     "timed_execution",

@@ -2,9 +2,10 @@ import multiprocessing
 import os
 import sys
 import time
-from os import PathLike
 from os.path import dirname
 from typing import AnyStr, Union
+
+from pycfutils import common
 
 # CPU
 
@@ -40,7 +41,7 @@ def cpu_stress(duration: float, count: int = 1) -> None:
 
 
 # pathlib.Path.parents equivalent
-def path_ancestor(path: Union[PathLike, AnyStr], level: int = 1) -> AnyStr:
+def path_ancestor(path: common.PathLike, level: int = 1) -> AnyStr:
     if level <= 0:
         return path if isinstance(path, (str, bytes)) else str(path)
     ret = dirname(path)

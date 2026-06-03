@@ -65,16 +65,6 @@ except NetworkException as e:
 
 pycfutils.system.cpu_stress(3)
 
-# --- REQUIRES PyGObject (python -m pip install PyGObject) ---
-# --- Also, might take some time to complete ---
-try:
-    from pycfutils.gstreamer import RegistryAccess
-except ModuleException as e:
-    print(e)
-else:
-    ra = RegistryAccess()
-    print(ra.element_classes())
-
 # --- Windows only ---
 import pycfutils.gui
 
@@ -162,7 +152,5 @@ Or run them as modules (e.g. in 2 separate terminals). Example (*Shell* snippets
 
 - Package has no (global) dependencies (from outside *Python* standard library).<br>
   However, some of its (niche - more or less) subpackages have their requirements:
-    - ***pycfutils.gstreamer***:
-        - ***PyGObject*** (`python -m pip install PyGObject`)
     - ***pycfutils.setup.command***:
         - ***SetupTools*** (`python -m pip install setuptools`) for *Python* >= *v3.12*

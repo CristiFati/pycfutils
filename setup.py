@@ -186,7 +186,6 @@ setup_args = dict(
     packages=find_packages(
         include=(
             _NAME,
-            f"{_NAME}.gstreamer",
             f"{_NAME}.gui",
             f"{_NAME}.gui._win",
             f"{_NAME}.gui.effects",

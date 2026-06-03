@@ -6,6 +6,7 @@ import traceback
 from typing import Any, AnyStr, Dict, Optional, Tuple, Union
 
 from pycfutils.exceptions import NetworkException
+from pycfutils.miscellaneous import uniques
 
 SOCKET_FAMILY_IPV4 = "ipv4"
 SOCKET_FAMILY_IPV6 = "ipv6"
@@ -92,7 +93,7 @@ def _parse_address(
         family=_SocketFamilyMap[family.lower()] if family is not None else 0,
         type=_SocketTypeMap[type_.lower()] if type_ is not None else 0,
     )
-    return tuple((*e[-1][:2], e[0], e[1]) for e in records)
+    return tuple(uniques((*e[-1][:2], e[0], e[1]) for e in records))
 
 
 def parse_address(

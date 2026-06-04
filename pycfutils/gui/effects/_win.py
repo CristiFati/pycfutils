@@ -18,6 +18,10 @@ GetLastError = kernel32.GetLastError
 GetLastError.argtypes = ()
 GetLastError.restype = wts.DWORD
 
+SetLastError = kernel32.SetLastError
+SetLastError.argtypes = (wts.DWORD,)
+SetLastError.restype = None
+
 GetWindowLong = user32.GetWindowLongA
 GetWindowLong.argtypes = (wts.HWND, cts.c_int)
 GetWindowLong.restype = wts.LONG
@@ -38,16 +42,23 @@ __global_modified_windows = set()
 
 
 def set_window_transparency(hwnd: int, percent: int) -> int:
+    SetLastError(0)
     style = GetWindowLong(hwnd, GWL_EXSTYLE)
     if style == 0:
-        return GetLastError()
+        err = GetLastError()
+        if err != 0:
+            return err
     if style & WS_EX_LAYERED:
         modified = False
     else:
+        SetLastError(0)
         if not SetWindowLong(hwnd, GWL_EXSTYLE, style | WS_EX_LAYERED):
-            return GetLastError()
+            err = GetLastError()
+            if err != 0:
+                return err
         modified = True
-    opaque_percent = 100 - (100 if percent == 100 else percent % 100)
+    percent = max(0, min(percent, 100))
+    opaque_percent = 100 - percent
     res = SetLayeredWindowAttributes(hwnd, 0, opaque_percent * 0xFF // 100, LWA_ALPHA)
     if not res:
         ret = GetLastError()
@@ -57,13 +68,16 @@ def set_window_transparency(hwnd: int, percent: int) -> int:
     if track_modified_windows:
         if percent == 0:
             if hwnd in __global_modified_windows:
+                SetLastError(0)
                 if (
                     SetWindowLong(
                         hwnd, GWL_EXSTYLE, style & wts.DWORD(~WS_EX_LAYERED).value
                     )
                     == 0
                 ):
-                    return GetLastError()
+                    err = GetLastError()
+                    if err != 0:
+                        return err
                 __global_modified_windows.remove(hwnd)
         else:
             if modified:

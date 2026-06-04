@@ -6,7 +6,7 @@ from typing import Tuple
 
 from pycfutils import common, miscellaneous
 
-_self_path = pathlib.Path(__file__).parent.absolute()
+_self_path = pathlib.Path(__file__).absolute()
 
 
 class BasePlugin:

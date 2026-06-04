@@ -85,6 +85,8 @@ def parse_args(*argv):
             parser.exit(status=-1, message="Invalid last port\n")
         elif args.last_port == 0:
             args.last_port = args.ports[0]
+        elif args.last_port < args.ports[0]:
+            parser.exit(status=-1, message="Last port <= first port\n")
     else:
         if args.last_port != 0:
             print("Last port passed with multiple first ports. Ignoring")
@@ -121,6 +123,8 @@ def parse_args(*argv):
             args.last_ip = args.addresses[0]
         if args.addresses[0][-1] != args.last_ip[-1]:
             parser.exit(status=-1, message="IP families don't match\n")
+        if not args.last_ip[0] >= args.addresses[0][0]:
+            parser.exit(status=-1, message="Last IP < first IP\n")
     else:
         if args.last_ip:
             print("Last ip passed with multiple first addresses. Ignoring")
@@ -158,11 +162,12 @@ def main(*argv):
             for e in range(args.addresses[0][0], args.last_ip[0] + 1)
         )
     ):
-        addr = _ip_string(*ip)
+        display_addr = _ip_string(*ip)
+        addr = display_addr.lstrip("[").rstrip("]")
         for port in args.ports if ports else range(args.ports[0], args.last_port + 1):
             print(
                 "Probing {:s}:{:d} (for {:.2f} seconds)...".format(
-                    addr, port, args.timeout
+                    display_addr, port, args.timeout
                 )
             )
             try:
@@ -185,6 +190,7 @@ def main(*argv):
     print(
         f"\nAttempted {total} ({ok} successful) connection(s) in {time.time() - start_time:.3f} seconds"
     )
+    return 0
 
 
 if __name__ == "__main__":

@@ -149,8 +149,12 @@ class _Server:
             address, port=port, family=family, type_=type_, exact_matches=1
         )
         address, port, family, self.type = record[0]
+        default_options = {socket.SOL_SOCKET: {socket.SO_REUSEADDR: 1}}
+        if options:
+            for level, opts in options.items():
+                default_options.setdefault(level, {}).update(opts)
         try:
-            self.socket = _create_socket(family, self.type, 0, options)
+            self.socket = _create_socket(family, self.type, 0, default_options)
             self.socket.bind((address, port))
             if self.type in (socket.SOCK_STREAM, socket.SOCK_SEQPACKET):
                 self.socket.listen(backlog)
@@ -260,26 +264,34 @@ def connect_to_server(
     )
     address, port, family, type_ = record[0]
     client = None
-    try:
-        client = _create_socket(family, type_, attempt_timeout, options)
-        for _ in range(attempts):
+    last_error = None
+    for _ in range(attempts):
+        try:
+            client = _create_socket(family, type_, attempt_timeout, options)
             client.connect((address, port))
             if _return_client_socket:
                 return client
             else:
-                return client.getsockname()
-    except OSError as e:
-        raise NetworkException("Could not connect to server") from e
-    finally:
-        if not _return_client_socket:
-            if attempt_timeout > 0:
-                _close_socket(client)
-            else:
-                ws = select.select((), (client,), ())[1]
-                if ws and ws[0] == client:
-                    _close_socket(client)
-                else:
+                try:
+                    return client.getsockname()
+                finally:
+                    if attempt_timeout > 0:
+                        _close_socket(client)
+                    else:
+                        ws = select.select((), (client,), ())[1]
+                        if ws and ws[0] == client:
+                            _close_socket(client)
+                        else:
+                            _close_socket(client, method=None)
+        except OSError as e:
+            last_error = e
+            if client is not None:
+                try:
                     _close_socket(client, method=None)
+                except Exception:
+                    pass
+                client = None
+    raise NetworkException("Could not connect to server") from last_error
 
 
 __all__ = (

@@ -17,7 +17,7 @@ from pycfutils import miscellaneous
 class MiscellaneousTestCase(unittest.TestCase):
     def setUp(self):
         self.this_file = str(pathlib.Path(__file__).absolute())
-        self.test_dir = pathlib.Path("test_dir")
+        self.test_dir = pathlib.Path(__file__).parent / "test_dir"
         self.test_dir_file_texts = [b"00", b"111", b"2222", b"33333"]
         shutil.rmtree(self.test_dir, ignore_errors=True)
         self.test_dir.mkdir(parents=True, exist_ok=True)
@@ -70,15 +70,15 @@ class MiscellaneousTestCase(unittest.TestCase):
 
     def test_int_format(self):
         self.assertEqual(miscellaneous.int_format(-101), "{:04d}")
-        self.assertEqual(miscellaneous.int_format(-100), "{:03d}")
+        self.assertEqual(miscellaneous.int_format(-100), "{:04d}")
         self.assertEqual(miscellaneous.int_format(-11), "{:03d}")
-        self.assertEqual(miscellaneous.int_format(-10), "{:02d}")
+        self.assertEqual(miscellaneous.int_format(-10), "{:03d}")
         self.assertEqual(miscellaneous.int_format(-1), "{:02d}")
         self.assertEqual(miscellaneous.int_format(0), "{:01d}")
         self.assertEqual(miscellaneous.int_format(1), "{:01d}")
-        self.assertEqual(miscellaneous.int_format(10), "{:01d}")
+        self.assertEqual(miscellaneous.int_format(10), "{:02d}")
         self.assertEqual(miscellaneous.int_format(11), "{:02d}")
-        self.assertEqual(miscellaneous.int_format(100), "{:02d}")
+        self.assertEqual(miscellaneous.int_format(100), "{:03d}")
         self.assertEqual(miscellaneous.int_format(101), "{:03d}")
 
     def test_timestamp_string(self):
@@ -252,6 +252,22 @@ class MiscellaneousTestCase(unittest.TestCase):
             )[-6:],
             "-00:30",
         )
+        for ofs, expected in (
+            ((-5, 0), "-05:00"),
+            ((5, 0), "+05:00"),
+            ((-10, 0), "-10:00"),
+            ((5, 30), "+05:30"),
+        ):
+            tz = datetime.timezone(datetime.timedelta(hours=ofs[0], minutes=ofs[1]))
+            self.assertEqual(
+                miscellaneous.timestamp_string(
+                    timestamp=datetime.datetime(2024, 5, 6, 12, 34, 56, tzinfo=tz),
+                    human_readable=True,
+                    separator="T",
+                    timezone=True,
+                )[-6:],
+                expected,
+            )
 
     def test_uniques(self):
         l0 = [1, 2, 3, 1, 4, 3, 5, 1, 1, 2, 6, 0, 0]
@@ -512,6 +528,8 @@ class MiscellaneousTestCase(unittest.TestCase):
         self.assertGreater(len(stack), len(stack1))
         self.assertEqual(stack[-1], (stack1[-1][0], stack1[-1][1] + 1) + stack1[-1][2:])
         self.assertEqual(self.this_file, stack[-1][0])
+        stack_d2 = miscellaneous.call_stack(max_levels=3, depth=2)
+        self.assertEqual(len(stack_d2), 1)
 
     def test_process_items_in_path(self):
 
@@ -664,7 +682,6 @@ class MiscellaneousTestCase(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             tuple(res)
         items = []
-        # Can't use *args here
         res = miscellaneous.process_path_items(
             self.test_dir,
             proc_args,
@@ -673,8 +690,22 @@ class MiscellaneousTestCase(unittest.TestCase):
             processor_path_argument_target="misleading_arg_name",
             exception_handler=exc_raise,
         )
-        with self.assertRaises(TypeError):
+        with self.assertRaises(NotImplementedError):
             tuple(res)
+        items = []
+        res = tuple(
+            miscellaneous.process_path_items(
+                self.test_dir,
+                proc_args,
+                items,
+                processor_path_argument_target="misleading_arg_name",
+                exception_handler=exc_raise,
+                dummy_kwarg="Not None",
+            )
+        )
+        item_count = self.test_dir_dir_count + self.test_dir_file_count
+        self.assertEqual(len(items), item_count)
+        self.assertEqual(len(items), len(res))
         items = []
         res = tuple(
             miscellaneous.process_path_items(

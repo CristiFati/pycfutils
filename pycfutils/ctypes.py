@@ -81,8 +81,8 @@ def _to_string(
                 _to_string(
                     c_object=c_object.contents,
                     indent=indent + 1,
-                    prefix=prefix,
-                    suffix=suffix,
+                    prefix=None,
+                    suffix=None,
                     indent_text=indent_text,
                     indent_first_line=True,
                 )

@@ -92,6 +92,7 @@ def main(*argv):
                 if read_key(timeout=0.5, poll_interval=0.1) is not None:
                     print("Interrupted by user")
                     break
+            srv.stop()
             total = srv.handled_total
             ok = srv.handled_ok
     except NetworkException as e:

@@ -29,17 +29,17 @@ class NetworkGenericTestCase(NetworkBaseTestCase):
         self.assertRaises(KeyError, network._parse_address, "", self.port, None, "type")
         plat = sys.platform.lower()
         if plat[:3] == "win" or plat == "darwin":
-            self.assertGreaterEqual(
+            self.assertGreater(
                 len(network._parse_address("", self.port, None, None)), self.min_conns
             )
-            self.assertGreaterEqual(
+            self.assertGreater(
                 len(network._parse_address(None, self.port, None, None)), self.min_conns
             )
         else:  # Linux (fallback)
             self.assertRaises(
                 socket.gaierror, network._parse_address, "", self.port, None, None
             )
-            self.assertGreaterEqual(
+            self.assertGreater(
                 len(network._parse_address(None, self.port, None, None)), self.min_conns
             )
         self.assertGreater(
@@ -58,47 +58,26 @@ class NetworkGenericTestCase(NetworkBaseTestCase):
                 self.assertEqual(len(res), 1)
 
     def test_parse_address(self):
-        self.assertRaises(
-            network.NetworkException,
-            network.parse_address,
-            "",
-            self.port,
-            {"family": "fam"},
-        )
-        self.assertRaises(
-            network.NetworkException,
-            network.parse_address,
-            "",
-            self.port,
-            {"type_": "type"},
-        )
-        self.assertRaises(
-            network.NetworkException,
-            network.parse_address,
-            self.lh4,
-            self.port,
-            {"family": network.SOCKET_FAMILY_IPV6},
-        )
-        self.assertRaises(
-            network.NetworkException,
-            network.parse_address,
-            self.lh6,
-            self.port,
-            {"family": network.SOCKET_FAMILY_IPV4},
-        )
+        with self.assertRaises(network.NetworkException):
+            network.parse_address("", self.port, family="fam")
+        with self.assertRaises(network.NetworkException):
+            network.parse_address("", self.port, type_="type")
+        with self.assertRaises(network.NetworkException):
+            network.parse_address(
+                self.lh4, self.port, family=network.SOCKET_FAMILY_IPV6
+            )
+        with self.assertRaises(network.NetworkException):
+            network.parse_address(
+                self.lh6, self.port, family=network.SOCKET_FAMILY_IPV4
+            )
         self.assertGreater(
             len(network.parse_address(self.lh, self.port)), self.min_conns
         )
         self.assertGreater(len(network.parse_address(self.lh4, self.port)), 0)
         if self.ipv6:
             self.assertGreater(len(network.parse_address(self.lh6, self.port)), 0)
-            self.assertRaises(
-                network.NetworkException,
-                network.parse_address,
-                self.lh,
-                self.port,
-                {"exact_matches": 1},
-            )
+            with self.assertRaises(network.NetworkException):
+                network.parse_address(self.lh, self.port, exact_matches=1)
         for family in self.families:
             for typ in self.types:
                 res = network.parse_address(
@@ -107,8 +86,8 @@ class NetworkGenericTestCase(NetworkBaseTestCase):
                 self.assertEqual(len(res), 1)
 
     def test__create_socket(self):
-        families = (network._SocketFamilyMap[e] for e in self.families)
-        types = (network._SocketTypeMap[e] for e in self.types)
+        families = tuple(network._SocketFamilyMap[e] for e in self.families)
+        types = tuple(network._SocketTypeMap[e] for e in self.types)
         opts = {
             socket.SOL_SOCKET: {
                 socket.SO_REUSEADDR: 1,
@@ -128,13 +107,8 @@ class NetworkGenericTestCase(NetworkBaseTestCase):
 # @unittest.skip("")
 class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
     def test_server(self):
-        self.assertRaises(
-            network.NetworkException,
-            network.TCPServer,
-            self.lh4,
-            self.port,
-            {"family": network.SOCKET_FAMILY_IPV6},
-        )
+        with self.assertRaises(network.NetworkException):
+            network.TCPServer(self.lh4, self.port, family=network.SOCKET_FAMILY_IPV6)
         self.assertRaises(
             network.NetworkException,
             network.TCPServer,
@@ -163,15 +137,17 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
                 time.sleep(0.1)
         srvs = []
         pofs = 0
-        for family in self.families:
-            s = network.TCPServer(self.lh, self.port + pofs, family=family)
-            pofs += 1
-            srvs.append(s)
-        for srv in srvs:
-            srv.start()
-        time.sleep(1)
-        for srv in srvs:
-            srv.close()
+        try:
+            for family in self.families:
+                s = network.TCPServer(self.lh, self.port + pofs, family=family)
+                pofs += 1
+                srvs.append(s)
+            for srv in srvs:
+                srv.start()
+            time.sleep(1)
+        finally:
+            for srv in srvs:
+                srv.close()
 
     def test_connect_to_server(self):
         self.assertRaises(

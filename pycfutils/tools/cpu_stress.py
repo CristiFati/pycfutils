@@ -13,7 +13,7 @@ def parse_args(*argv):
     parser.add_argument(
         "--cpus",
         "-c",
-        choices=range(1, os.cpu_count() + 1),
+        choices=range(1, (os.cpu_count() or -1) + 1),
         default=1,
         type=int,
         help="number of CPUs to stress",
@@ -44,6 +44,7 @@ def main(*argv):
     except KeyboardInterrupt:
         pass
     print(f"Stopped after {time.time() - start_time:.3f} seconds")
+    return 0
 
 
 if __name__ == "__main__":

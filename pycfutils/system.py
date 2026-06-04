@@ -27,7 +27,7 @@ def _cpu_stress(duration: float) -> None:
 
 def cpu_stress(duration: float, count: int = 1) -> None:
     procs = []
-    for _ in range(min(count, os.cpu_count())):
+    for _ in range(min(count, os.cpu_count() or -1)):
         procs.append(
             multiprocessing.Process(target=_cpu_stress, kwargs={"duration": duration})
         )

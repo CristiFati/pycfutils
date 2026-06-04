@@ -15,7 +15,7 @@ _DLL_NAME = os.path.join(
 
 try:
     _DLL = cts.CDLL(_DLL_NAME)
-except:
+except Exception:
     if pycfutils.__test_mode:
         _DLL = None
 

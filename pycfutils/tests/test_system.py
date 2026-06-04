@@ -46,12 +46,16 @@ class SystemTestCase(unittest.TestCase):
 
     def test_stress_cpu(self):
         if cpu_percent is None:
-            return
+            self.skipTest("psutil not installed")
         duration = 1
         avg, mx = self._cpu_data(duration=duration)
         cnt = os.cpu_count()
+        if cnt is None:
+            self.skipTest("os.cpu_count() returned None")
         cpu_load = 1 / cnt
         free_cpus = int(cnt * (1 - mx))
+        if free_cpus <= 1:
+            self.skipTest("Not enough free CPUs to test stress")
         ignore_cpu_count = 1  # Should be 0, but tests fail due to noise
         for cpus in range(1, free_cpus, 2):
             t = threading.Thread(

@@ -17,6 +17,7 @@ class GUITestCase(unittest.TestCase):
         else:
             self.assertIsNone(message_box)
 
+    @unittest.skipUnless(_IS_WIN, "Effects only available on Windows")
     def test_effects(self):
         for e in getattr(effects, "__all__", ()):
-            self.assertIsNotNone(getattr(effects, e))
+            self.assertIsNotNone(getattr(effects, e, None))

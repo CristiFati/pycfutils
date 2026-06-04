@@ -64,7 +64,12 @@ int MessageBoxXY(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType, int x
     EnterCriticalSection(&criticalSection);
     DWORD tid = GetCurrentThreadId();
     int err = 0;
-    if (hookData.find(tid) == hookData.cend()) {
+    HookData::iterator hIt = hookData.find(tid);
+    if (hIt != hookData.end()) {
+        UnhookWindowsHookEx(hIt->second);
+        hookData.erase(hIt);
+    }
+    {
         HHOOK hook = SetWindowsHookExW(WH_CBT, _hookFunc, 0, tid);
         if (hook) {
             hookData.emplace(std::make_pair(tid, hook));
@@ -72,11 +77,9 @@ int MessageBoxXY(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType, int x
         else {
             err = GetLastError();
         }
-    } else {
-        err = -1;
     }
     if (!err) {
-        xyData.emplace(std::make_pair(tid, std::make_pair(x, y)));
+        xyData.insert_or_assign(tid, std::make_pair(x, y));
     }
     LeaveCriticalSection(&criticalSection);
     return err ? err : MessageBoxW(hWnd, lpText, lpCaption, uType);
@@ -92,6 +95,8 @@ int clearHooks()
             ++ret;
         }  // @TODO - cfati: Silently fail?
     }
+    hookData.clear();
+    xyData.clear();
     LeaveCriticalSection(&criticalSection);
     return ret;
 }
@@ -120,8 +125,14 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
             if (lpvReserved != NULL) {
                 break; // do not do cleanup if process termination scenario
             }
+            EnterCriticalSection(&criticalSection);
+            for (auto it = hookData.cbegin(); it != hookData.cend(); ++it) {
+                UnhookWindowsHookEx(it->second);
+            }
+            hookData.clear();
+            xyData.clear();
+            LeaveCriticalSection(&criticalSection);
             DeleteCriticalSection(&criticalSection);
-            // Perform any necessary cleanup.
             break;
         }
         default: {

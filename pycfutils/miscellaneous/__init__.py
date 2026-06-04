@@ -49,7 +49,7 @@ def dimensions_2d(value: int) -> Tuple:
 
 def int_format(limit: int) -> str:
     sgn = 1 if limit < 0 else 0
-    return f"{{:0{math.ceil(math.log10(max(abs(limit), 2))) + sgn:d}d}}"
+    return f"{{:0{math.floor(math.log10(max(abs(limit), 2))) + 1 + sgn:d}d}}"
 
 
 def timestamp_string(
@@ -80,7 +80,7 @@ def timestamp_string(
     if timezone:
         if tm.tzinfo is None:
             tm = tm.astimezone(tz=tz)
-        secs = tm.tzinfo.utcoffset(None).seconds
+        secs = int(tm.tzinfo.utcoffset(None).total_seconds())
         if timezone_offset_minutes:
             negative = True if timezone_offset_minutes < 0 else False
             max_mins = 720 if negative else 840
@@ -387,8 +387,8 @@ def process_path_items(
         return None
     try:
         bound_args, path_target = _bind_arguments_to_callable(
+            processor,
             *processor_args,
-            callable_=processor,
             callable_path_argument_target=processor_path_argument_target,
             **processor_kwargs,
         )

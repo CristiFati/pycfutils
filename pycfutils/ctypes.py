@@ -1,3 +1,5 @@
+"""Ctypes utilities for endianness detection and structured object display."""
+
 import ctypes
 import enum
 import sys
@@ -10,12 +12,15 @@ except Exception:
 
 
 class Endian(enum.IntEnum):
+    """Byte order enumeration."""
+
     UNKNOWN = 0
     BIG = 1
     LITTLE = 2
 
 
 def endianness() -> "Endian":
+    """Detect the system's native byte order at runtime."""
 
     class _U(ctypes.Union):
         _fields_ = (
@@ -99,6 +104,7 @@ def to_string(
     suffix: Optional[str] = "",
     indent_text: str = "  ",
 ) -> str:
+    """Return a human-readable string representation of a ctypes object."""
     return _to_string(
         c_object=c_object,
         indent=indent,
@@ -112,18 +118,26 @@ def to_string(
 if _CLS_CDATA:
 
     class Structure(ctypes.Structure):
+        """Structure with built-in string representation via to_string."""
+
         to_string = to_string
 
     class Union(ctypes.Union):
+        """Union with built-in string representation via to_string."""
+
         to_string = to_string
 
     #    class Array(cts.Array):
     #        to_string = to_string
 
     class BigEndianStructure(ctypes.BigEndianStructure):
+        """Big-endian structure with built-in string representation via to_string."""
+
         to_string = to_string
 
     class LittleEndianStructure(ctypes.LittleEndianStructure):
+        """Little-endian structure with built-in string representation via to_string."""
+
         to_string = to_string
 
     __all__ = (

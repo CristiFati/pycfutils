@@ -1,3 +1,5 @@
+"""Network server and client connection utilities."""
+
 import select
 import socket
 import sys
@@ -104,6 +106,15 @@ def parse_address(
     type_: Optional[AnyStr] = None,
     exact_matches: int = 0,
 ) -> Tuple[Tuple[Any, int, socket.AddressFamily, socket.SocketKind], ...]:
+    """Resolve an address and port into a tuple of (address, port, family, type) records.
+
+    Args:
+        address: Hostname or IP to resolve.
+        port: Port number (0 for any).
+        family: Socket family name to filter by, or None for all.
+        type_: Socket type name to filter by, or None for all.
+        exact_matches: If positive, raise if the number of records differs.
+    """
     if (family is not None and family not in SOCKET_FAMILIES) or (
         type_ is not None and type_ not in SOCKET_TYPES
     ):
@@ -126,6 +137,8 @@ def parse_address(
 
 
 class _Server:
+    """Base class for poll-based socket servers running in a background thread."""
+
     def __init__(
         self,
         address: AnyStr,
@@ -137,6 +150,18 @@ class _Server:
         options: SockOpts,
         backlog: int,
     ) -> None:
+        """Initialize the server, resolve the address, and bind the socket.
+
+        Args:
+            address: Hostname or IP to bind to.
+            port: Port number to listen on.
+            family: Socket family name (e.g. "ipv4"), or None for auto.
+            type_: Socket type name (e.g. "tcp"), or None for auto.
+            poll_timeout: Seconds between polling cycles for incoming connections.
+            silent: Suppress connection log messages.
+            options: Nested dict of socket options keyed by level and option name.
+            backlog: Maximum number of queued connections for stream sockets.
+        """
         self.poll_timeout = poll_timeout
         self.silent = silent
         self.type = type_
@@ -184,6 +209,7 @@ class _Server:
         self.close()
 
     def start(self) -> bool:
+        """Start the server's background polling thread."""
         if self.socket is None:
             return False
         if self.running:
@@ -195,12 +221,14 @@ class _Server:
         return True
 
     def stop(self) -> None:
+        """Stop the server's background polling thread."""
         self.running = False
         if self.thread is not None:
             self.thread.join()
             self.thread = None
 
     def handle_incoming(self) -> bool:
+        """Handle a single incoming connection. Subclasses must override."""
         raise NotImplementedError
 
     def _run(self) -> None:
@@ -216,6 +244,7 @@ class _Server:
                 self.handled_total += 1
 
     def close(self, stop_thread: bool = True) -> None:
+        """Stop the server thread and close the socket."""
         if stop_thread:
             self.stop()
         _close_socket(self.socket)
@@ -223,6 +252,8 @@ class _Server:
 
 
 class TCPServer(_Server):
+    """TCP server that accepts and immediately closes incoming connections."""
+
     def __init__(
         self,
         address: AnyStr,
@@ -267,6 +298,18 @@ def connect_to_server(
     # If True, socket will have to be closed by caller
     _return_client_socket: bool = False,
 ) -> Union[Tuple[Any, ...], socket.SocketType, None]:
+    """Attempt a TCP connection and return the local address or the client socket.
+
+    Args:
+        address: Hostname or IP to connect to.
+        port: Target port number.
+        family: Socket family name (e.g. "ipv4", "ipv6"), or None for auto.
+        attempts: Number of connection attempts before raising.
+        attempt_timeout: Timeout in seconds for each attempt.
+        options: Nested dict of socket options keyed by level and option name.
+        _return_client_socket: If True, return the connected socket instead of
+            the local address. The caller is responsible for closing it.
+    """
     attempts = max(attempts, 1)
     record = parse_address(
         address, port=port, family=family, type_=SOCKET_TYPE_TCP, exact_matches=1

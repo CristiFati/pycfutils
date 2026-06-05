@@ -1,3 +1,5 @@
+"""GUI utilities."""
+
 import sys
 
 __all__ = ()

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""CLI tool for testing connectivity to a server."""
 
 import argparse
 import socket
@@ -35,7 +36,6 @@ def parse_args(
     parser.add_argument(
         "--attempts", "-c", default=1, type=int, help="number of connection attempts"
     )
-    parser.add_argument("--port", "-p", default=0, type=int, help="port to connect to")
     parser.add_argument(
         "--family",
         "-f",
@@ -43,6 +43,7 @@ def parse_args(
         default=None,
         help="address family",
     )
+    parser.add_argument("--port", "-p", default=0, type=int, help="port to connect to")
 
     args, unk = parser.parse_known_args(argv)
     if unk:

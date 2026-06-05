@@ -1,3 +1,5 @@
+"""Windows window transparency effects via the User32 API."""
+
 import atexit
 import ctypes as cts
 import sys
@@ -42,6 +44,12 @@ __global_modified_windows = set()
 
 
 def set_window_transparency(hwnd: int, percent: int) -> int:
+    """Set a window's transparency level. Returns 0 on success.
+
+    Args:
+        hwnd: Handle to the target window.
+        percent: Transparency level where 0 is fully opaque and 100 is invisible.
+    """
     SetLastError(0)
     style = GetWindowLong(hwnd, GWL_EXSTYLE)
     if style == 0:

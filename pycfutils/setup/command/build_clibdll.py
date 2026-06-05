@@ -1,3 +1,5 @@
+"""Setuptools command for building C/C++ libraries as static or dynamic."""
+
 import os
 import shutil
 import sys
@@ -23,6 +25,7 @@ _IS_WIN = sys.platform[:3].lower() == "win"
 
 
 class BuildCLibDll(build_clib):
+    """Extended build_clib that supports building shared libraries (DLLs / SOs)."""
 
     description = "build C/C++ libraries (static or dynamic) used by other commands"
 
@@ -34,6 +37,7 @@ class BuildCLibDll(build_clib):
     #   - `for src_base, dst_path in build_info.get("copy_files", {}).items():` ...
     # Would be nicer to refactor directly in distutils / setuptools
     def build_libraries(self, libraries: List[Tuple[str, Dict[str, Any]]]) -> None:
+        """Compile and link libraries, supporting both static archives and shared objects."""
         for lib_name, build_info in libraries:
             sources = build_info.get("sources")
             if sources is None or not isinstance(sources, (list, tuple)):

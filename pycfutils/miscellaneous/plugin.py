@@ -1,3 +1,5 @@
+"""Plugin discovery and loading framework."""
+
 import inspect
 import pathlib
 import sys
@@ -10,12 +12,16 @@ _self_path = pathlib.Path(__file__).absolute()
 
 
 class BasePlugin:
+    """Base class for discoverable plugins loaded from filesystem paths."""
+
     @classmethod
     def id(cls) -> str:
+        """Return a unique identifier for this plugin class."""
         return "".join((__name__, cls.__name__))
 
     @classmethod
     def type(cls) -> str:
+        """Return the plugin type name."""
         return cls.__name__
 
     @classmethod
@@ -57,6 +63,15 @@ class BasePlugin:
         name_filter_function: common.StringFilter = lambda arg: True,
         item_filter_function: common.GenericFilter = lambda arg: True,
     ) -> Tuple[Type["BasePlugin"], ...]:
+        """Discover and load plugin subclasses from a file or directory.
+
+        Args:
+            location: File or directory path to search for plugins.
+            recursive: Recurse into subdirectories when location is a directory.
+            filesystem_filter_function: Predicate controlling which paths are examined.
+            name_filter_function: Predicate applied to each attribute name in a module.
+            item_filter_function: Predicate applied to each discovered plugin class.
+        """
         ret = []
         path = pathlib.Path(location)
         if path.is_file():

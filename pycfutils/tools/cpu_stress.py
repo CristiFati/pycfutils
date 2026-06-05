@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""CLI tool for CPU stress testing."""
 
 import argparse
 import os

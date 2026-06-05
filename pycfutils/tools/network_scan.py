@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""CLI tool for scanning network address and port ranges."""
 
 import argparse
 import socket
@@ -37,18 +38,6 @@ def parse_args(
         ),
     )
     parser.add_argument(
-        "--port",
-        "-p",
-        action="append",
-        default=[],
-        dest="ports",
-        type=int,
-        help=(
-            "port (first) to scan. Can be specified multiple times"
-            " (in that case only the specified ports will be attempted)"
-        ),
-    )
-    parser.add_argument(
         "--last_ip",
         "-i",
         help=(
@@ -65,6 +54,18 @@ def parse_args(
         help=(
             "last port to scan (defaults to first, must be greater or equal to first)."
             " If more than one first port is specified, this is ignored"
+        ),
+    )
+    parser.add_argument(
+        "--port",
+        "-p",
+        action="append",
+        default=[],
+        dest="ports",
+        type=int,
+        help=(
+            "port (first) to scan. Can be specified multiple times"
+            " (in that case only the specified ports will be attempted)"
         ),
     )
     parser.add_argument(

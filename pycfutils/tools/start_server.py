@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""CLI tool for starting a listening server."""
 
 import argparse
 import socket

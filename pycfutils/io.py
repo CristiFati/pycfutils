@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Cross-platform input / output utilities."""
 
 import sys
 import time
@@ -41,6 +42,7 @@ def read_key(
     timeout: float = 0.5,
     poll_interval: float = 0.1,
 ) -> Optional[int]:
+    """Wait for a keypress within a timeout and return its code, or None."""
     ctx = _start_func() if _start_func is not None else None
     try:
         if timeout < 0:

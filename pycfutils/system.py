@@ -1,3 +1,5 @@
+"""System-level utilities."""
+
 import multiprocessing
 import os
 import sys
@@ -26,6 +28,7 @@ def _cpu_stress(duration: float) -> None:
 
 
 def cpu_stress(duration: float, count: int = 1) -> None:
+    """Spawn processes that busy-loop for a given duration to stress CPUs."""
     procs = []
     for _ in range(min(count, os.cpu_count() or -1)):
         procs.append(
@@ -42,6 +45,7 @@ def cpu_stress(duration: float, count: int = 1) -> None:
 
 # pathlib.Path.parents equivalent
 def path_ancestor(path: common.PathLike, level: int = 1) -> AnyStr:
+    """Return the ancestor directory of a path at a given depth level."""
     if level <= 0:
         return path if isinstance(path, (str, bytes)) else str(path)
     ret = dirname(path)

@@ -1,7 +1,11 @@
+"""Exception classes for pycfutils."""
+
 import sys
 
 
 class CFUtilsException(Exception):
+    """Base exception for pycfutils, includes cause in string representation."""
+
     def __str__(self) -> str:
         if self.__cause__:
             return f"{super().__str__()} ({self.__cause__})"
@@ -9,11 +13,11 @@ class CFUtilsException(Exception):
 
 
 class ModuleException(CFUtilsException):
-    pass
+    """Exception raised by module-related operations."""
 
 
 class NetworkException(CFUtilsException):
-    pass
+    """Exception raised by network-related operations."""
 
 
 __all__ = ("CFUtilsException", "ModuleException", "NetworkException")

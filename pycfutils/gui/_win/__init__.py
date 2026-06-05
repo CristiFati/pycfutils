@@ -1,3 +1,5 @@
+"""Windows-specific GUI utilities backed by a native DLL."""
+
 import atexit
 import ctypes as cts
 import os
@@ -44,6 +46,7 @@ else:
         style: int = 0,
         hwnd: Optional[wts.HWND] = None,
     ) -> int:
+        """Display a message box at an optional screen position."""
         return _MessageBoxXY(
             hwnd,
             text,

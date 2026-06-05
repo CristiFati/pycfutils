@@ -1,3 +1,5 @@
+"""Miscellaneous utility functions."""
+
 import calendar
 import copy
 import datetime
@@ -29,6 +31,8 @@ from pycfutils import common
 
 
 class DictMergeOverlapPolicy(Enum):
+    """Policy for handling overlapping keys when merging dictionaries."""
+
     JOIN_LIST = 0
     JOIN_TUPLE = 1
     DELETE = 2
@@ -41,6 +45,7 @@ Numeric = Union[int, float]
 
 
 def dimensions_2d(value: int) -> Tuple[int, int]:
+    """Compute near-square 2D grid dimensions for a given number of items."""
     if value <= 0:
         return 0, 0
     sq = round(math.sqrt(value))
@@ -48,6 +53,7 @@ def dimensions_2d(value: int) -> Tuple[int, int]:
 
 
 def int_format(limit: int) -> str:
+    """Return a zero-padded integer format string suitable for values up to limit."""
     sgn = 1 if limit < 0 else 0
     return f"{{:0{math.floor(math.log10(max(abs(limit), 2))) + 1 + sgn:d}d}}"
 
@@ -63,6 +69,20 @@ def timestamp_string(
     local_auto_timezone: bool = False,  # Or UTC
     timezone_offset_minutes: int = 0,  # Will not alter the actual time
 ) -> str:
+    """Convert a timestamp to a formatted date-time string.
+
+    Args:
+        timestamp: Value to convert. None for current time, int/float for
+            epoch seconds, datetime, struct_time, or tuple of date components.
+        human_readable: Insert separators between date and time components.
+        date_separator: Character between year, month, and day.
+        time_separator: Character between hours, minutes, and seconds.
+        separator: Character between date and time parts.
+        microseconds: Append microseconds to the output.
+        timezone: Append timezone offset to the output.
+        local_auto_timezone: Use local timezone instead of UTC.
+        timezone_offset_minutes: Display offset to apply without altering the time.
+    """
     tz = None if local_auto_timezone else datetime.timezone.utc
     if timestamp is None:
         tm = datetime.datetime.now(tz=tz)
@@ -134,6 +154,14 @@ def timed_execution(
     print_arguments: bool = False,
     return_time: bool = False,
 ) -> Callable:
+    """Decorator that measures and optionally prints the execution time of a callable.
+
+    Args:
+        print_time: Print the elapsed time to stdout.
+        print_arguments: Include arguments in the printed output.
+        return_time: Append elapsed seconds to the return value as a tuple.
+    """
+
     def callable_wrapper0(callable_: Callable) -> Callable:
         def callable_wrapper1(*args: Tuple, **kwargs: Dict) -> Any:
             start_time = time.time()
@@ -156,6 +184,7 @@ def timed_execution(
 
 
 def uniques(sequence: Iterable[Any]) -> Generator[Any, None, None]:
+    """Yield unique elements from a sequence, preserving order."""
     handled = set()
     for e in sequence:
         if e not in handled:
@@ -171,6 +200,15 @@ def progression(
     op: Callable[[Numeric, Numeric], Numeric] = operator.mul,
     stop_function: Optional[Callable[[Numeric], bool]] = None,
 ) -> Generator[Numeric, None, None]:
+    """Generate a numeric progression by repeatedly applying an operator to a ratio.
+
+    Args:
+        ratio: Value applied to the current element each step.
+        first: Starting value of the progression.
+        count: Maximum number of elements to yield. 0 or negative for unlimited.
+        op: Binary operator applied as op(current, ratio) each step.
+        stop_function: Optional predicate; stops the progression when it returns True.
+    """
     idx = 0
     val = float(first) if isinstance(ratio, float) else first
     while True:
@@ -190,6 +228,7 @@ def pretty_print(
     indent: int = 2,
     sort_dicts: bool = False,
 ) -> None:
+    """Pretty-print an object with optional header and footer text."""
     if head is not None:
         print(head)
     pprint(obj, indent=indent, sort_dicts=sort_dicts)
@@ -198,12 +237,14 @@ def pretty_print(
 
 
 def nested_dict_item(data: Dict, keys: Iterable[Any]) -> Any:
+    """Retrieve a value from a nested dictionary by traversing a sequence of keys."""
     for key in keys:
         data = data[key]
     return data
 
 
 def nest_object(keys: Reversible[Any], value: Any) -> Dict:
+    """Wrap a value in nested single-key dictionaries from a sequence of keys."""
     for key in reversed(keys):
         value = {key: value}
     return value
@@ -243,6 +284,7 @@ def merge_dicts(
     right: Dict,
     overlap_policy: DictMergeOverlapPolicy = DictMergeOverlapPolicy.DEFAULT,
 ) -> Dict:
+    """Deep-merge two dictionaries with a configurable overlap policy."""
     if not isinstance(left, dict) or not isinstance(right, dict):
         raise TypeError("One of the supplied arguments is not a dict")
     return copy.deepcopy(_merge_dicts(left, right, overlap_policy))
@@ -251,6 +293,7 @@ def merge_dicts(
 def write_json_to_file(
     json_obj: Any, file_name: common.PathLike, newline: str = "", indent: int = 2
 ) -> None:
+    """Serialize a JSON-compatible object to a file."""
     with open(file_name, mode="w", newline=newline) as f:
         json.dump(json_obj, f, indent=indent)
 
@@ -262,6 +305,15 @@ def randomize(
     round_result: bool = False,
     round_digits: Optional[int] = None,
 ) -> float:
+    """Return a random value within an asymmetric percentage deviation of the input.
+
+    Args:
+        value: Center value for the random range.
+        left_deviation_percent: Maximum negative deviation as a percentage.
+        right_deviation_percent: Maximum positive deviation as a percentage.
+        round_result: Round the result before returning.
+        round_digits: Number of decimal places when rounding, None for integer.
+    """
     if left_deviation_percent <= 0 and right_deviation_percent <= 0:
         return round(value, ndigits=round_digits) if round_result else value
     upper_dev = abs(value) * max(right_deviation_percent, 0) / 100
@@ -273,6 +325,12 @@ def randomize(
 def whoami(
     depth: int = 0, first_line_number: bool = False
 ) -> Union[Tuple[str, int, str], Tuple[str, int, str, int]]:
+    """Return the file path, line number, and function name of the caller.
+
+    Args:
+        depth: Number of extra frames to skip above the immediate caller.
+        first_line_number: Append the function's first line number as a 4th element.
+    """
     frame = sys._getframe(depth + 1)
     code = frame.f_code
     p = Path(code.co_filename)
@@ -284,6 +342,7 @@ def whoami(
 
 
 def call_stack(max_levels: int = 0, depth: int = 0) -> Tuple[Tuple[str, int, str], ...]:
+    """Return the current call stack as a tuple of (file, line, function) entries."""
     ret = []
     depth += 1
     while True:
@@ -382,7 +441,17 @@ def process_path_items(
     exception_handler: Optional[Callable[[Exception], None]] = None,
     **processor_kwargs,
 ) -> Generator:
-    # print("++++++", path, processor, processor_path_argument_target, processing_filter, traversing_filter, exception_handler, processor_args, processor_kwargs)
+    """Recursively apply a processor callable to filesystem items under a path.
+
+    Args:
+        path: Root path to process.
+        processor: Callable to invoke on each matching item.
+        processor_path_argument_target: Parameter of processor to receive the path.
+            A string for name lookup, int for positional index, or None for the first.
+        processing_filter: Predicate controlling which paths are processed.
+        traversing_filter: Predicate controlling which directories are descended into.
+        exception_handler: Optional callback invoked with any exception raised.
+    """
     if not isinstance(path, Path):
         path = Path(path)
     if not path.exists():
@@ -419,6 +488,14 @@ def object_items(
     item_filter_function: common.GenericFilter = lambda arg: True,
     modules_only: bool = True,
 ) -> Optional[common.GenericTuple]:
+    """Return filtered attributes of an object (typically a module) as a tuple.
+
+    Args:
+        object_: Object whose attributes are inspected.
+        name_filter_function: Predicate applied to each attribute name.
+        item_filter_function: Predicate applied to each attribute value.
+        modules_only: Return None immediately if object_ is not a module.
+    """
     if modules_only and type(object_) is not types.ModuleType:
         return None
     ret = []

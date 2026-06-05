@@ -4,6 +4,7 @@ import argparse
 import socket
 import sys
 import time
+from typing import List, Optional, Sequence, Tuple
 
 from pycfutils.exceptions import NetworkException
 from pycfutils.network import (
@@ -14,7 +15,9 @@ from pycfutils.network import (
 )
 
 
-def parse_args(*argv):
+def parse_args(
+    argv: Optional[Sequence[str]] = None,
+) -> Tuple[argparse.Namespace, List[str]]:
     parser = argparse.ArgumentParser(description="Test listening server")
     parser.add_argument(
         "--address",
@@ -41,7 +44,7 @@ def parse_args(*argv):
         help="address family",
     )
 
-    args, unk = parser.parse_known_args()
+    args, unk = parser.parse_known_args(argv)
     if unk:
         print(f"Warning: Ignoring unknown arguments: {unk}")
 
@@ -63,8 +66,8 @@ def parse_args(*argv):
     return args, unk
 
 
-def main(*argv):
-    args, _ = parse_args()
+def main(*argv) -> int:
+    args, _ = parse_args(argv or None)
     print(
         "Attempting to connect to"
         f" {args.address[0].join('[]') if args.address[-1] == socket.AF_INET6 else args.address[0]}"

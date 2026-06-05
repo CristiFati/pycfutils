@@ -4,6 +4,7 @@ import argparse
 import socket
 import sys
 import time
+from typing import List, Optional, Sequence, Tuple
 
 from pycfutils.exceptions import NetworkException
 from pycfutils.io import read_key
@@ -17,7 +18,9 @@ def _ip_string(ip: int, family: socket.AddressFamily) -> str:
     return addr.join("[]") if family == socket.AF_INET6 else addr
 
 
-def parse_args(*argv):
+def parse_args(
+    argv: Optional[Sequence[str]] = None,
+) -> Tuple[argparse.Namespace, List[str]]:
     parser = argparse.ArgumentParser(
         description="IP:Port scanner (TCP)",
         epilog="Scans IP:port combinations in the given specified values or ranges",
@@ -68,7 +71,7 @@ def parse_args(*argv):
         "--timeout", "-t", default=0.5, type=float, help="connection timeout"
     )
 
-    args, unk = parser.parse_known_args()
+    args, unk = parser.parse_known_args(argv)
     if unk:
         print(f"Warning: Ignoring unknown arguments: {unk}")
 
@@ -132,8 +135,8 @@ def parse_args(*argv):
     return args, unk
 
 
-def main(*argv):
-    args, _ = parse_args()
+def main(*argv) -> int:
+    args, _ = parse_args(argv or None)
     ips = len(args.addresses) > 1
     ports = len(args.ports) > 1
     addr_text = (

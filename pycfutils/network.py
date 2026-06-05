@@ -3,7 +3,8 @@ import socket
 import sys
 import threading
 import traceback
-from typing import Any, AnyStr, Dict, Optional, Tuple, Union
+import types as builtin_types
+from typing import Any, AnyStr, Dict, Optional, Tuple, Type, Union
 
 from pycfutils.exceptions import NetworkException
 from pycfutils.miscellaneous import uniques
@@ -67,7 +68,7 @@ def _create_socket(
     return sock
 
 
-def _close_socket(sock, method: Optional[int] = socket.SHUT_RDWR) -> int:
+def _close_socket(sock: Any, method: Optional[int] = socket.SHUT_RDWR) -> int:
     if not isinstance(sock, socket.socket):
         return -1
     ret = 0
@@ -86,7 +87,7 @@ def _parse_address(
     port: int,
     family: Optional[AnyStr],
     type_: Optional[AnyStr],
-) -> Optional[Tuple]:
+) -> Tuple[Tuple[Any, int, socket.AddressFamily, socket.SocketKind], ...]:
     records = socket.getaddrinfo(
         address,
         port,
@@ -102,7 +103,7 @@ def parse_address(
     family: Optional[AnyStr] = None,
     type_: Optional[AnyStr] = None,
     exact_matches: int = 0,
-) -> Optional[Tuple]:
+) -> Tuple[Tuple[Any, int, socket.AddressFamily, socket.SocketKind], ...]:
     if (family is not None and family not in SOCKET_FAMILIES) or (
         type_ is not None and type_ not in SOCKET_TYPES
     ):
@@ -148,26 +149,34 @@ class _Server:
         record = parse_address(
             address, port=port, family=family, type_=type_, exact_matches=1
         )
-        address, port, family, self.type = record[0]
+        resolved_addr, resolved_port, resolved_family, resolved_type = record[0]
+        self.type = resolved_type
         default_options = {socket.SOL_SOCKET: {socket.SO_REUSEADDR: 1}}
         if options:
             for level, opts in options.items():
                 default_options.setdefault(level, {}).update(opts)
         try:
-            self.socket = _create_socket(family, self.type, 0, default_options)
-            self.socket.bind((address, port))
-            if self.type in (socket.SOCK_STREAM, socket.SOCK_SEQPACKET):
+            self.socket = _create_socket(
+                resolved_family, resolved_type, 0, default_options
+            )
+            self.socket.bind((resolved_addr, resolved_port))
+            if resolved_type in (socket.SOCK_STREAM, socket.SOCK_SEQPACKET):
                 self.socket.listen(backlog)
         except OSError as e:
             self.close()
             raise NetworkException("Error creating server") from e
 
-    def __enter__(self):
+    def __enter__(self) -> "_Server":
         if not self.start():
             raise NetworkException("Could not start server")
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[builtin_types.TracebackType],
+    ) -> bool:
         self.close()
         return exc_type is None
 
@@ -206,7 +215,7 @@ class _Server:
                     self.handled_ok += 1
                 self.handled_total += 1
 
-    def close(self, stop_thread=True) -> None:
+    def close(self, stop_thread: bool = True) -> None:
         if stop_thread:
             self.stop()
         _close_socket(self.socket)
@@ -257,18 +266,20 @@ def connect_to_server(
     options: SockOpts = None,
     # If True, socket will have to be closed by caller
     _return_client_socket: bool = False,
-) -> Union[Tuple, socket.socket, None]:
+) -> Union[Tuple[Any, ...], socket.SocketType, None]:
     attempts = max(attempts, 1)
     record = parse_address(
         address, port=port, family=family, type_=SOCKET_TYPE_TCP, exact_matches=1
     )
-    address, port, family, type_ = record[0]
+    resolved_addr, resolved_port, resolved_family, resolved_type = record[0]
     client = None
     last_error = None
     for _ in range(attempts):
         try:
-            client = _create_socket(family, type_, attempt_timeout, options)
-            client.connect((address, port))
+            client = _create_socket(
+                resolved_family, resolved_type, attempt_timeout, options
+            )
+            client.connect((resolved_addr, resolved_port))
             if _return_client_socket:
                 return client
             else:

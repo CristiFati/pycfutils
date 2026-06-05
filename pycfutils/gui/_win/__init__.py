@@ -3,7 +3,7 @@ import ctypes as cts
 import os
 import sys
 from ctypes import wintypes as wts
-from typing import Optional
+from typing import Any, Optional
 
 import pycfutils
 from pycfutils.system import path_ancestor
@@ -19,7 +19,7 @@ except Exception:
     if pycfutils.__test_mode:
         _DLL = None
 
-        def message_box(_0, _1, _2, _3, _4):
+        def message_box(_0: Any, _1: Any, _2: Any, _3: Any, _4: Any) -> int:
             return -1
 
     else:

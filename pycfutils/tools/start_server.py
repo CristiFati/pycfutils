@@ -4,13 +4,16 @@ import argparse
 import socket
 import sys
 import time
+from typing import List, Optional, Sequence, Tuple
 
 from pycfutils.exceptions import NetworkException
 from pycfutils.io import read_key
 from pycfutils.network import SOCKET_FAMILIES, SOCKET_TYPE_TCP, TCPServer, parse_address
 
 
-def parse_args(*argv):
+def parse_args(
+    argv: Optional[Sequence[str]] = None,
+) -> Tuple[argparse.Namespace, List[str]]:
     parser = argparse.ArgumentParser(description="Start listening server")
     parser.add_argument(
         "--address",
@@ -40,7 +43,7 @@ def parse_args(*argv):
         help="reuse address/port (other sockets may bind to it)",
     )
 
-    args, unk = parser.parse_known_args()
+    args, unk = parser.parse_known_args(argv)
     if unk:
         print(f"Warning: Ignoring unknown arguments: {unk}")
 
@@ -62,8 +65,8 @@ def parse_args(*argv):
     return args, unk
 
 
-def main(*argv):
-    args, _ = parse_args()
+def main(*argv) -> int:
+    args, _ = parse_args(argv or None)
     print(
         f"Attempting to start a TCP server listening on"
         f" {args.address[0].join('[]') if args.address[-1] == socket.AF_INET6 else args.address[0]}"

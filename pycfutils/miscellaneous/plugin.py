@@ -2,7 +2,7 @@ import inspect
 import pathlib
 import sys
 from importlib.util import module_from_spec, spec_from_file_location
-from typing import Tuple
+from typing import Any, Tuple, Type
 
 from pycfutils import common, miscellaneous
 
@@ -19,7 +19,7 @@ class BasePlugin:
         return cls.__name__
 
     @classmethod
-    def _filter_plugin(cls, item) -> bool:
+    def _filter_plugin(cls, item: Any) -> bool:
         return (
             item is not cls
             and issubclass(item.__class__, type)
@@ -56,7 +56,7 @@ class BasePlugin:
         filesystem_filter_function: common.PathFilter = lambda arg: True,
         name_filter_function: common.StringFilter = lambda arg: True,
         item_filter_function: common.GenericFilter = lambda arg: True,
-    ) -> Tuple["BasePlugin", ...]:
+    ) -> Tuple[Type["BasePlugin"], ...]:
         ret = []
         path = pathlib.Path(location)
         if path.is_file():

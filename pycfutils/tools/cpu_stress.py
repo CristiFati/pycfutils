@@ -4,11 +4,14 @@ import argparse
 import os
 import sys
 import time
+from typing import List, Optional, Sequence, Tuple
 
 from pycfutils.system import cpu_stress
 
 
-def parse_args(*argv):
+def parse_args(
+    argv: Optional[Sequence[str]] = None,
+) -> Tuple[argparse.Namespace, List[str]]:
     parser = argparse.ArgumentParser(description="CPU Stress")
     parser.add_argument(
         "--cpus",
@@ -22,7 +25,7 @@ def parse_args(*argv):
         "--time", "-t", default=10, type=float, help="time (seconds) to stress"
     )
 
-    args, unk = parser.parse_known_args()
+    args, unk = parser.parse_known_args(argv)
     if unk:
         print(f"Warning: Ignoring unknown arguments: {unk}")
 
@@ -31,8 +34,8 @@ def parse_args(*argv):
     return args, unk
 
 
-def main(*argv):
-    args, _ = parse_args()
+def main(*argv) -> int:
+    args, _ = parse_args(argv or None)
     print(
         f"Attempting to start {args.cpus} process(es)"
         f" for{f' {args.time} seconds' if args.time else 'ever'}.\n"

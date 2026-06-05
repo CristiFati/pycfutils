@@ -2,7 +2,7 @@
 
 import sys
 import time
-from typing import Any
+from typing import Any, Optional
 
 if sys.platform[:3].lower() == "win":
     import msvcrt
@@ -40,7 +40,7 @@ else:  # Nix
 def read_key(
     timeout: float = 0.5,
     poll_interval: float = 0.1,
-):
+) -> Optional[int]:
     ctx = _start_func() if _start_func is not None else None
     try:
         if timeout < 0:

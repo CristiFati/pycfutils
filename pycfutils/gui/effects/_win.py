@@ -3,7 +3,7 @@ import ctypes as cts
 import sys
 from ctypes import wintypes as wts
 
-track_modified_windows = False
+track_modified_windows: bool = False
 
 COLORREF = wts.DWORD
 

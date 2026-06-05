@@ -2,7 +2,7 @@ import sys
 
 
 class CFUtilsException(Exception):
-    def __str__(self):
+    def __str__(self) -> str:
         if self.__cause__:
             return f"{super().__str__()} ({self.__cause__})"
         return super().__str__()

@@ -40,7 +40,7 @@ class DictMergeOverlapPolicy(Enum):
 Numeric = Union[int, float]
 
 
-def dimensions_2d(value: int) -> Tuple:
+def dimensions_2d(value: int) -> Tuple[int, int]:
     if value <= 0:
         return 0, 0
     sq = round(math.sqrt(value))
@@ -61,7 +61,7 @@ def timestamp_string(
     microseconds: bool = False,
     timezone: bool = False,
     local_auto_timezone: bool = False,  # Or UTC
-    timezone_offset_minutes=0,  # Will not alter the actual time
+    timezone_offset_minutes: int = 0,  # Will not alter the actual time
 ) -> str:
     tz = None if local_auto_timezone else datetime.timezone.utc
     if timestamp is None:
@@ -155,7 +155,7 @@ def timed_execution(
     return callable_wrapper0
 
 
-def uniques(sequence: Iterable[Any]) -> Iterable[Any]:
+def uniques(sequence: Iterable[Any]) -> Generator[Any, None, None]:
     handled = set()
     for e in sequence:
         if e not in handled:
@@ -170,7 +170,7 @@ def progression(
     count: int = 16,
     op: Callable[[Numeric, Numeric], Numeric] = operator.mul,
     stop_function: Optional[Callable[[Numeric], bool]] = None,
-) -> Iterable[Numeric]:
+) -> Generator[Numeric, None, None]:
     idx = 0
     val = float(first) if isinstance(ratio, float) else first
     while True:
@@ -189,7 +189,7 @@ def pretty_print(
     tail: Any = None,
     indent: int = 2,
     sort_dicts: bool = False,
-):
+) -> None:
     if head is not None:
         print(head)
     pprint(obj, indent=indent, sort_dicts=sort_dicts)
@@ -197,13 +197,13 @@ def pretty_print(
         print(tail)
 
 
-def nested_dict_item(data: Dict, keys: Iterable[Any]):
+def nested_dict_item(data: Dict, keys: Iterable[Any]) -> Any:
     for key in keys:
         data = data[key]
     return data
 
 
-def nest_object(keys: Reversible[Any], value: Any):
+def nest_object(keys: Reversible[Any], value: Any) -> Dict:
     for key in reversed(keys):
         value = {key: value}
     return value
@@ -213,7 +213,7 @@ def _merge_dicts(
     left: Dict,
     right: Dict,
     overlap_policy: DictMergeOverlapPolicy,
-):
+) -> Dict:
     ret = {}
     for k, v in left.items():
         ret[k] = v
@@ -242,13 +242,15 @@ def merge_dicts(
     left: Dict,
     right: Dict,
     overlap_policy: DictMergeOverlapPolicy = DictMergeOverlapPolicy.DEFAULT,
-):
+) -> Dict:
     if not isinstance(left, dict) or not isinstance(right, dict):
         raise TypeError("One of the supplied arguments is not a dict")
     return copy.deepcopy(_merge_dicts(left, right, overlap_policy))
 
 
-def write_json_to_file(json_obj, file_name, newline="", indent=2):
+def write_json_to_file(
+    json_obj: Any, file_name: common.PathLike, newline: str = "", indent: int = 2
+) -> None:
     with open(file_name, mode="w", newline=newline) as f:
         json.dump(json_obj, f, indent=indent)
 
@@ -268,7 +270,9 @@ def randomize(
     return round(ret, ndigits=round_digits) if round_result else ret
 
 
-def whoami(depth: int = 0, first_line_number: bool = False) -> Tuple[str, int, str]:
+def whoami(
+    depth: int = 0, first_line_number: bool = False
+) -> Union[Tuple[str, int, str], Tuple[str, int, str, int]]:
     frame = sys._getframe(depth + 1)
     code = frame.f_code
     p = Path(code.co_filename)
@@ -279,7 +283,7 @@ def whoami(depth: int = 0, first_line_number: bool = False) -> Tuple[str, int, s
     return ret
 
 
-def call_stack(max_levels: int = 0, depth: int = 0) -> Tuple[Tuple[str, int, str]]:
+def call_stack(max_levels: int = 0, depth: int = 0) -> Tuple[Tuple[str, int, str], ...]:
     ret = []
     depth += 1
     while True:

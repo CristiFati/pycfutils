@@ -45,6 +45,21 @@ C         H         A         N        G        E         L         O         G
 
 [vTBR]
 
+[v2026.06.12]
+    - Forbid IPv6 mapped v4 addresses, network test small fixes
+      @CristiFati, 260612
+    - Docstrings, typehints, fixes
+      @CristiFati, 260605
+    - Network fix
+    - Remove Gstreamer (separate repo)
+      @CristiFati, 260603
+    - Plugin functionality
+    - Refactor miscellaneous (package)
+      @CristiFati, 260130
+    - Endianness
+    - Bugfixes (network, arguments, time)
+      @CristiFati, 251230
+
 [v2025.11.29]
     - Add path items processor
       @CristiFati, 251129

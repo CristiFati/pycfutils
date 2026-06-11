@@ -189,6 +189,7 @@ setup_args = dict(
             f"{_NAME}.gui",
             f"{_NAME}.gui._win",
             f"{_NAME}.gui.effects",
+            f"{_NAME}.miscellaneous",
             f"{_NAME}.setup",
             f"{_NAME}.setup.command",
             f"{_NAME}.tests",

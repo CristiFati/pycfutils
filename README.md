@@ -1,34 +1,40 @@
-# *PyCFUtils*
+# PyCFUtils
 
-*PyCFUtils* (**C**risti **F**ati's ***Utils*** for ***Py**thon* (&& more)) - a collection of goodies ((cool) scripts / utilities)
+[![PyPI version](https://img.shields.io/pypi/v/pycfutils)](https://pypi.org/project/pycfutils/)
+[![Python versions](https://img.shields.io/pypi/pyversions/pycfutils)](https://pypi.org/project/pycfutils/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
+**PyCFUtils** (**C**risti **F**ati's **Utils** for **Py**thon (&& more)) is a cross-platform collection of utility modules covering IO, networking, system operations, ctypes helpers, GUI wrappers (Windows), and SetupTools extensions for building native libraries. It has no global dependencies outside the Python standard library.
 
 ## Install
-
-Use *PIP*:
 
 ```shell
 python -m pip install --upgrade pycfutils
 ```
 
+## Usage
 
-## Usage example
+### IO
 
 ```python
-import os
-import time
-
-import pycfutils.ctypes
 import pycfutils.io
-import pycfutils.miscellaneous as misc
-import pycfutils.network
-import pycfutils.system
-from pycfutils.exceptions import ModuleException, NetworkException
 
 print("Press a key in less than one second...")
 print(pycfutils.io.read_key(timeout=1))
+```
+
+### CTypes
+
+```python
+import pycfutils.ctypes
 
 print(pycfutils.ctypes.endianness())
+```
+
+### Miscellaneous utilities
+
+```python
+import pycfutils.miscellaneous as misc
 
 print(misc.timestamp_string(human_readable=True, separator="T", microseconds=True))
 print(tuple(misc.progression(ratio=2, count=20)))
@@ -42,12 +48,20 @@ misc.pretty_print(
     tuple(
         misc.process_path_items(
             path="${a_directory_with_few_child_items}",
-            processor=lambda arg: os.stat(arg).st_size,
+            processor=lambda arg: __import__("os").stat(arg).st_size,
         )
     ),
     head="Path items:",
     tail="",
 )
+```
+
+### Timed execution decorator
+
+```python
+import time
+
+import pycfutils.miscellaneous as misc
 
 
 @misc.timed_execution()
@@ -57,26 +71,42 @@ def func(arg0, kw0=1):
 
 
 func("123")
+```
+
+### Networking
+
+```python
+import pycfutils.network
+from pycfutils.exceptions import NetworkException
 
 try:
     print(pycfutils.network.connect_to_server("127.0.0.1", 22))
 except NetworkException as e:
     print(e)
+```
+
+### System
+
+```python
+import pycfutils.system
 
 pycfutils.system.cpu_stress(3)
+```
 
-# --- Windows only ---
+### GUI (Windows only)
+
+```python
 import pycfutils.gui
 
 print(pycfutils.gui.message_box("Title", "Text to display", x=320, y=200))
 ```
 
-#### Functionality to build a *\*.dll* (*\*.so*) with *SetupTools*.
+### Building a native library (.dll / .so) with SetupTools
 
-Parts of *setup.py*:
+Parts of `setup.py`:
 
 ```python
-# --- REQUIRES SetupTools (python -m pip install setuptools) for Python >= v3.12 ---
+# Requires SetupTools (python -m pip install setuptools) for Python >= 3.12
 from setuptools import setup
 
 from pycfutils.setup.command.build_clibdll import build_clibdll
@@ -92,7 +122,7 @@ dll = (
         # ...
         "dll": True,  # False (or nothing) for regular (static) library
         "copy_files": {  # Optional (copy artifacts)
-            "dll_name.so": "pkg_name",  #  dll_name.dll on Win
+            "dll_name.so": "pkg_name",  # dll_name.dll on Win
         },
         # ...
     },
@@ -111,46 +141,56 @@ setup(
 )
 ```
 
-#### Some useful (*CLI* wrapper) scripts (in the *tools* folder)
+### CLI tools
 
-Example:
+The `tools` folder contains CLI wrapper scripts. To list them and view their help:
 
-- *Nix*:
+Unix:
 
-    ```shell
-    ls "pycfutils/tools"
-    for script in $(find "pycfutils/tools" -maxdepth 1 -type f); do python "${script}" -h; done
-    ```
+```shell
+ls "pycfutils/tools"
+for script in $(find "pycfutils/tools" -maxdepth 1 -type f); do python "${script}" -h; done
+```
 
-- *Win*:
+Windows:
 
-    ```batchfile
-    dir /b "pycfutils\tools"
-    for /f %g in ('dir /b /a-d /a-l "pycfutils\tools\*.py"') do (python "pycfutils\tools\%g" -h)
-    ```
+```batch
+dir /b "pycfutils\tools"
+for /f %g in ('dir /b /a-d /a-l "pycfutils\tools\*.py"') do (python "pycfutils\tools\%g" -h)
+```
 
-Or run them as modules (e.g. in 2 separate terminals). Example (*Shell* snippets that also work in *Batch*):
+They can also be run as modules. For example, in two separate terminals:
 
-- Terminal 1:
+Terminal 1:
 
-    ```shell
-    python -m pycfutils.tools.connect_to_server -a 127.0.0.1 -p 16180
+```shell
+python -m pycfutils.tools.connect_to_server -a 127.0.0.1 -p 16180
 
-    # Go to the other terminal and run the other command (start the server),
-    #   then come back and re-run the previous command
+# Go to Terminal 2 and start the server, then come back and re-run:
 
-    python -m pycfutils.tools.connect_to_server -a 127.0.0.1 -p 16180
-    ```
+python -m pycfutils.tools.connect_to_server -a 127.0.0.1 -p 16180
+```
 
-- Terminal 2:
+Terminal 2:
 
-    ```shell
-    python -m pycfutils.tools.start_server -a 127.0.0.1 -p 16180
-    ```
+```shell
+python -m pycfutils.tools.start_server -a 127.0.0.1 -p 16180
+```
 
 ## Notes
 
-- Package has no (global) dependencies (from outside *Python* standard library).<br>
-  However, some of its (niche - more or less) subpackages have their requirements:
-    - ***pycfutils.setup.command***:
-        - ***SetupTools*** (`python -m pip install setuptools`) for *Python* >= *v3.12*
+- The package has no global dependencies outside the Python standard library.
+  However, some subpackages have their own requirements:
+    - **pycfutils.setup.command**: requires [SetupTools](https://pypi.org/project/setuptools/) (`python -m pip install setuptools`) for Python >= 3.12
+
+## Changelog
+
+See [CHANGELOG](CHANGELOG) for a full list of changes.
+
+## Contributing
+
+Contributions are welcome. Please open an issue or submit a pull request on [GitHub](https://github.com/CristiFati/pycfutils).
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).

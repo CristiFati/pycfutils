@@ -45,7 +45,7 @@ if [ -z "${NO_TEST}" ] && [ -z "${NO_TESTS}" ]; then
             netstat -an | grep ${_TEST_PORT} > /dev/null
             _EC="${?}"
         done
-        printf -- "Using environment: %s\n" ${_venv}
+        printf -- "\n------- Using environment: %s\n" ${_venv}
          . "${_venv}/bin/activate"
         python -VV
         python -m pip uninstall -y pycfutils

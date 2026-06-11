@@ -23,7 +23,7 @@ if defined NO_TESTS (
     call bat_funcs dirname %TEST_VENV_PATTERN% _VENVS_DIR
     set _VENVS_DIR=%_VENVS_DIR:"=%
     for /f %%g in ('dir /b /ad %TEST_VENV_PATTERN:"=%') do (
-        echo Using environment: "%_VENVS_DIR%\%%g"
+        echo. & echo ------- Using environment: "%_VENVS_DIR%\%%g"
         call "%_VENVS_DIR%\%%g\Scripts\activate.bat"
         set _TESTS_DIR="%_VENVS_DIR%\%%g\Lib\site-packages\pycfutils\tests"
         python -VV

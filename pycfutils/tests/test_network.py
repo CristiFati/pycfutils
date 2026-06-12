@@ -70,6 +70,17 @@ class NetworkGenericTestCase(NetworkBaseTestCase):
             network.parse_address(
                 self.lh6, self.port, family=network.SOCKET_FAMILY_IPV4
             )
+        lh4map6 = f"::ffff:{self.lh4}"
+        with self.assertRaises(network.NetworkException):
+            network.parse_address(lh4map6, self.port, family=network.SOCKET_FAMILY_IPV4)
+        self.assertGreater(
+            len(
+                network.parse_address(
+                    lh4map6, self.port, family=network.SOCKET_FAMILY_IPV6
+                )
+            ),
+            0,
+        )
         self.assertGreater(
             len(network.parse_address(self.lh, self.port)), self.min_conns
         )

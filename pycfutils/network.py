@@ -1,5 +1,6 @@
 """Network server and client connection utilities."""
 
+import ipaddress
 import select
 import socket
 import sys
@@ -119,6 +120,17 @@ def parse_address(
         type_ is not None and type_ not in SOCKET_TYPES
     ):
         raise NetworkException("Invalid family or type")
+    if address is not None and family is not None:
+        try:
+            addr_str = address.decode() if isinstance(address, bytes) else address
+            parsed = ipaddress.ip_address(addr_str)
+        except ValueError:
+            pass
+        else:
+            if (family == SOCKET_FAMILY_IPV4 and parsed.version != 4) or (
+                family == SOCKET_FAMILY_IPV6 and parsed.version != 6
+            ):
+                raise NetworkException("Address does not match requested family")
     try:
         records = _parse_address(
             address,

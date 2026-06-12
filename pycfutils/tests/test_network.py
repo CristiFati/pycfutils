@@ -127,25 +127,23 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
             self.port,
             {"family": network.SOCKET_FAMILY_IPV4},
         )
-        time.sleep(0.5)
         with network.TCPServer(self.lh4, self.port):
-            time.sleep(0.5)
+            pass
         with network.TCPServer(self.lh4, self.port) as srv:
-            time.sleep(0.5)
             srv.close()
             self.assertFalse(srv.start())
         with network.TCPServer(
             self.lh, self.port, family=network.SOCKET_FAMILY_IPV4, poll_timeout=0
         ):
-            time.sleep(0.1)
+            pass
         if self.ipv6:
             # self.assertRaises(network.NetworkException, network.TCPServer, self.lh, self.port)  #  /etc/hosts !!!
             with network.TCPServer(self.lh6, self.port):
-                time.sleep(0.5)
+                pass
             with network.TCPServer(
                 self.lh, self.port, family=network.SOCKET_FAMILY_IPV6, poll_timeout=0
             ):
-                time.sleep(0.1)
+                pass
         srvs = []
         pofs = 0
         try:
@@ -155,7 +153,7 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
                 srvs.append(s)
             for srv in srvs:
                 srv.start()
-            time.sleep(1)
+            time.sleep(0.5)
         finally:
             for srv in srvs:
                 srv.close()
@@ -178,7 +176,7 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
 
     def test_server_client(
         self,
-    ):  # @TODO - cfati: On Nix, this should be last test run (due to TIME_WAIT)
+    ):
         with network.TCPServer(self.lh4, self.port, silent=True) as srv:
             self.assertEqual(
                 network.connect_to_server(self.lh4, self.port, attempt_timeout=0.5)[0],
@@ -203,7 +201,6 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
                 network.connect_to_server(self.lh4, self.port, attempt_timeout=0.5)[0],
                 self.lh4,
             )
-            time.sleep(0.1)
             cli = network.connect_to_server(
                 self.lh4, self.port, attempt_timeout=0.5, _return_client_socket=True
             )
@@ -213,7 +210,6 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
             except:
                 pass
             srv.close()
-            time.sleep(0.1)
             self.assertRaises(
                 network.NetworkException,
                 network.connect_to_server,

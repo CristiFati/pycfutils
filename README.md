@@ -1,7 +1,7 @@
 # PyCFUtils
 
-[![PyPI version](https://img.shields.io/pypi/v/pycfutils)](https://pypi.org/project/pycfutils/)
-[![Python versions](https://img.shields.io/pypi/pyversions/pycfutils)](https://pypi.org/project/pycfutils/)
+[![PyPI version](https://img.shields.io/pypi/v/pycfutils)](https://pypi.org/project/pycfutils)
+[![Python versions](https://img.shields.io/pypi/pyversions/pycfutils)](https://pypi.org/project/pycfutils)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 **PyCFUtils** (**C**risti **F**ati's **Utils** for **Py**thon (&& more)) is a cross-platform collection of utility modules covering IO, networking, system operations, ctypes helpers, GUI wrappers (Windows), and SetupTools extensions for building native libraries. It has no global dependencies outside the Python standard library.
@@ -181,7 +181,7 @@ python -m pycfutils.tools.start_server -a 127.0.0.1 -p 16180
 
 - The package has no global dependencies outside the Python standard library.
   However, some subpackages have their own requirements:
-    - **pycfutils.setup.command**: requires [SetupTools](https://pypi.org/project/setuptools/) (`python -m pip install setuptools`) for Python >= 3.12
+    - **pycfutils.setup.command**: requires [SetupTools](https://pypi.org/project/setuptools) (`python -m pip install setuptools`) for Python >= 3.12
 
 ## Changelog
 

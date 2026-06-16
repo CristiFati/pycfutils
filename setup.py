@@ -157,7 +157,6 @@ setup_args = dict(
     python_requires=">=3.7",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
-        "License :: OSI Approved :: MIT License",
         "Operating System :: MacOS",
         "Operating System :: Microsoft :: Windows",
         "Operating System :: POSIX",

@@ -14,13 +14,12 @@ maintainers = [
   {name = "Cristi Fati", email = "fati_utcluj@yahoo.com"},
 ]
 readme = "README.md"
-license = {file = "LICENSE"}
+license = "MIT"
 
 requires-python = ">=3.7"
 
 classifiers = [
   "Development Status :: 5 - Production/Stable",
-  "License :: OSI Approved :: MIT License",
   "Operating System :: MacOS",
   "Operating System :: Microsoft :: Windows",
   "Operating System :: POSIX",

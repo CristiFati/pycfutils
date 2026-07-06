@@ -1,11 +1,13 @@
 """Windows-specific GUI utilities backed by a native DLL."""
 
+from __future__ import annotations
+
 import atexit
 import ctypes as cts
 import os
 import sys
 from ctypes import wintypes as wts
-from typing import Any, Optional
+from typing import Any
 
 import pycfutils
 from pycfutils.system import path_ancestor
@@ -41,10 +43,10 @@ else:
     def message_box(
         title: str,
         text: str,
-        x: Optional[int] = None,
-        y: Optional[int] = None,
+        x: int | None = None,
+        y: int | None = None,
         style: int = 0,
-        hwnd: Optional[wts.HWND] = None,
+        hwnd: wts.HWND | None = None,
     ) -> int:
         """Display a message box at an optional screen position."""
         return _MessageBoxXY(

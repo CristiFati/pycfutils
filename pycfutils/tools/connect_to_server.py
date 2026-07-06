@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 """CLI tool for testing connectivity to a server."""
 
+from __future__ import annotations
+
 import argparse
+import collections.abc
 import socket
 import sys
 import time
-from typing import List, Optional, Sequence, Tuple
 
 from pycfutils.exceptions import NetworkException
 from pycfutils.network import (
@@ -17,8 +19,8 @@ from pycfutils.network import (
 
 
 def parse_args(
-    argv: Optional[Sequence[str]] = None,
-) -> Tuple[argparse.Namespace, List[str]]:
+    argv: collections.abc.Sequence[str] | None = None,
+) -> tuple[argparse.Namespace, list[str]]:
     parser = argparse.ArgumentParser(description="Test listening server")
     parser.add_argument(
         "--address",

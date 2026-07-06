@@ -1,9 +1,11 @@
 """Ctypes utilities for endianness detection and structured object display."""
 
+from __future__ import annotations
+
 import ctypes
 import enum
 import sys
-from typing import Any, Optional
+from typing import Any
 
 try:
     _CLS_CDATA = ctypes.c_int.__mro__[-2]
@@ -40,8 +42,8 @@ def endianness() -> "Endian":
 def _to_string(
     c_object: Any,
     indent: int,
-    prefix: Optional[str],
-    suffix: Optional[str],
+    prefix: str | None,
+    suffix: str | None,
     indent_text: str,
     indent_first_line: bool,
 ) -> str:
@@ -100,8 +102,8 @@ def _to_string(
 def to_string(
     c_object: Any,
     indent: int = 0,
-    prefix: Optional[str] = "",
-    suffix: Optional[str] = "",
+    prefix: str | None = "",
+    suffix: str | None = "",
     indent_text: str = "  ",
 ) -> str:
     """Return a human-readable string representation of a ctypes object."""

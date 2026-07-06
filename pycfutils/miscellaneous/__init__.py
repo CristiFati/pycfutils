@@ -1,6 +1,9 @@
 """Miscellaneous utility functions."""
 
+from __future__ import annotations
+
 import calendar
+import collections.abc
 import copy
 import datetime
 import inspect
@@ -14,18 +17,7 @@ import types
 from enum import Enum
 from pathlib import Path
 from pprint import pprint
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Generator,
-    Iterable,
-    Optional,
-    Reversible,
-    Sequence,
-    Tuple,
-    Union,
-)
+from typing import Any, Union
 
 from pycfutils import common
 
@@ -44,7 +36,7 @@ class DictMergeOverlapPolicy(Enum):
 Numeric = Union[int, float]
 
 
-def dimensions_2d(value: int) -> Tuple[int, int]:
+def dimensions_2d(value: int) -> tuple[int, int]:
     """Compute near-square 2D grid dimensions for a given number of items."""
     if value <= 0:
         return 0, 0
@@ -59,7 +51,7 @@ def int_format(limit: int) -> str:
 
 
 def timestamp_string(
-    timestamp: Union[None, Sequence, datetime.datetime, int, float] = None,
+    timestamp: None | collections.abc.Sequence | datetime.datetime | int | float = None,
     human_readable: bool = False,
     date_separator: str = "-",
     time_separator: str = ":",
@@ -134,7 +126,9 @@ def timestamp_string(
     return ret
 
 
-def _callable_string(callable_: Callable, *args: Tuple, **kwargs: Dict) -> str:
+def _callable_string(
+    callable_: collections.abc.Callable, *args: tuple, **kwargs: dict
+) -> str:
     arg_sep = ", "
     args_str = arg_sep.join(["{}"] * len(args)).format(*args) if args else ""
     kwargs_str = (
@@ -153,7 +147,7 @@ def timed_execution(
     print_time: bool = True,
     print_arguments: bool = False,
     return_time: bool = False,
-) -> Callable:
+) -> collections.abc.Callable:
     """Decorator that measures and optionally prints the execution time of a callable.
 
     Args:
@@ -162,8 +156,10 @@ def timed_execution(
         return_time: Append elapsed seconds to the return value as a tuple.
     """
 
-    def callable_wrapper0(callable_: Callable) -> Callable:
-        def callable_wrapper1(*args: Tuple, **kwargs: Dict) -> Any:
+    def callable_wrapper0(
+        callable_: collections.abc.Callable,
+    ) -> collections.abc.Callable:
+        def callable_wrapper1(*args: tuple, **kwargs: dict) -> Any:
             start_time = time.time()
             ret = callable_(*args, **kwargs)
             dt = time.time() - start_time
@@ -183,7 +179,9 @@ def timed_execution(
     return callable_wrapper0
 
 
-def uniques(sequence: Iterable[Any]) -> Generator[Any, None, None]:
+def uniques(
+    sequence: collections.abc.Iterable[Any],
+) -> collections.abc.Generator[Any, None, None]:
     """Yield unique elements from a sequence, preserving order."""
     handled = set()
     for e in sequence:
@@ -197,9 +195,9 @@ def progression(
     ratio: Numeric,
     first: Numeric = 1,
     count: int = 16,
-    op: Callable[[Numeric, Numeric], Numeric] = operator.mul,
-    stop_function: Optional[Callable[[Numeric], bool]] = None,
-) -> Generator[Numeric, None, None]:
+    op: collections.abc.Callable[[Numeric, Numeric], Numeric] = operator.mul,
+    stop_function: collections.abc.Callable[[Numeric], bool] | None = None,
+) -> collections.abc.Generator[Numeric, None, None]:
     """Generate a numeric progression by repeatedly applying an operator to a ratio.
 
     Args:
@@ -236,14 +234,14 @@ def pretty_print(
         print(tail)
 
 
-def nested_dict_item(data: Dict, keys: Iterable[Any]) -> Any:
+def nested_dict_item(data: dict, keys: collections.abc.Iterable[Any]) -> Any:
     """Retrieve a value from a nested dictionary by traversing a sequence of keys."""
     for key in keys:
         data = data[key]
     return data
 
 
-def nest_object(keys: Reversible[Any], value: Any) -> Dict:
+def nest_object(keys: collections.abc.Reversible[Any], value: Any) -> dict:
     """Wrap a value in nested single-key dictionaries from a sequence of keys."""
     for key in reversed(keys):
         value = {key: value}
@@ -251,10 +249,10 @@ def nest_object(keys: Reversible[Any], value: Any) -> Dict:
 
 
 def _merge_dicts(
-    left: Dict,
-    right: Dict,
+    left: dict,
+    right: dict,
     overlap_policy: DictMergeOverlapPolicy,
-) -> Dict:
+) -> dict:
     ret = {}
     for k, v in left.items():
         ret[k] = v
@@ -280,10 +278,10 @@ def _merge_dicts(
 
 
 def merge_dicts(
-    left: Dict,
-    right: Dict,
+    left: dict,
+    right: dict,
     overlap_policy: DictMergeOverlapPolicy = DictMergeOverlapPolicy.DEFAULT,
-) -> Dict:
+) -> dict:
     """Deep-merge two dictionaries with a configurable overlap policy."""
     if not isinstance(left, dict) or not isinstance(right, dict):
         raise TypeError("One of the supplied arguments is not a dict")
@@ -303,7 +301,7 @@ def randomize(
     left_deviation_percent: int = 10,
     right_deviation_percent: int = 10,
     round_result: bool = False,
-    round_digits: Optional[int] = None,
+    round_digits: int | None = None,
 ) -> float:
     """Return a random value within an asymmetric percentage deviation of the input.
 
@@ -324,7 +322,7 @@ def randomize(
 
 def whoami(
     depth: int = 0, first_line_number: bool = False
-) -> Union[Tuple[str, int, str], Tuple[str, int, str, int]]:
+) -> tuple[str, int, str] | tuple[str, int, str, int]:
     """Return the file path, line number, and function name of the caller.
 
     Args:
@@ -341,7 +339,7 @@ def whoami(
     return ret
 
 
-def call_stack(max_levels: int = 0, depth: int = 0) -> Tuple[Tuple[str, int, str], ...]:
+def call_stack(max_levels: int = 0, depth: int = 0) -> tuple[tuple[str, int, str], ...]:
     """Return the current call stack as a tuple of (file, line, function) entries."""
     ret = []
     depth += 1
@@ -359,9 +357,9 @@ def call_stack(max_levels: int = 0, depth: int = 0) -> Tuple[Tuple[str, int, str
 def _bind_arguments_to_callable(
     callable_: Callable,
     *callable_args,
-    callable_path_argument_target: Optional[Union[str, int]] = None,
+    callable_path_argument_target: str | int | None = None,
     **callable_kwargs,
-) -> Tuple[inspect.BoundArguments, str]:
+) -> tuple[inspect.BoundArguments, str]:
     # print("++++++", callable_, callable_path_argument_target, callable_args, callable_kwargs)
     sig = inspect.signature(callable_)
     params = tuple(sig.parameters.items())
@@ -397,14 +395,14 @@ def _bind_arguments_to_callable(
 
 def _process_path_items(
     path: Path,
-    processor: Callable[..., Any],
+    processor: collections.abc.Callable[..., Any],
     processor_bound_arguments: inspect.BoundArguments,
     processor_path_argument_target: str,
-    processing_filter: Callable[[Path], bool],
-    traversing_filter: Callable[[Path, int], bool],
-    exception_handler: Optional[Callable[[Exception], None]],
+    processing_filter: collections.abc.Callable[[Path], bool],
+    traversing_filter: collections.abc.Callable[[Path, int], bool],
+    exception_handler: collections.abc.Callable[[Exception], None] | None,
     level: int,
-) -> Generator:
+) -> collections.abc.Generator:
     try:
         if processing_filter(path):
             processor_bound_arguments.arguments[processor_path_argument_target] = path
@@ -431,16 +429,16 @@ def _process_path_items(
 
 def process_path_items(
     path: common.PathLike,
-    processor: Callable[..., Any],
+    processor: collections.abc.Callable[..., Any],
     *processor_args,
-    processor_path_argument_target: Optional[Union[str, int]] = None,
-    processing_filter: Callable[[Path], bool] = lambda arg: True,
-    traversing_filter: Callable[[Path, int], bool] = lambda arg0, arg1: not (
-        arg0.is_symlink() and arg0.is_dir()
-    ),
-    exception_handler: Optional[Callable[[Exception], None]] = None,
+    processor_path_argument_target: str | int | None = None,
+    processing_filter: collections.abc.Callable[[Path], bool] = lambda arg: True,
+    traversing_filter: collections.abc.Callable[
+        [Path, int], bool
+    ] = lambda arg0, arg1: not (arg0.is_symlink() and arg0.is_dir()),
+    exception_handler: collections.abc.Callable[[Exception], None] | None = None,
     **processor_kwargs,
-) -> Generator:
+) -> collections.abc.Generator:
     """Recursively apply a processor callable to filesystem items under a path.
 
     Args:
@@ -487,7 +485,7 @@ def object_items(
     name_filter_function: common.StringFilter = lambda arg: True,
     item_filter_function: common.GenericFilter = lambda arg: True,
     modules_only: bool = True,
-) -> Optional[common.GenericTuple]:
+) -> common.GenericTuple | None:
     """Return filtered attributes of an object (typically a module) as a tuple.
 
     Args:

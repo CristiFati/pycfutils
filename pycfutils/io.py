@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 """Cross-platform input / output utilities."""
 
+from __future__ import annotations
+
 import sys
 import time
-from typing import Any, Optional
+from typing import Any
 
 if sys.platform[:3].lower() == "win":
     import msvcrt
@@ -41,7 +43,7 @@ else:  # Nix
 def read_key(
     timeout: float = 0.5,
     poll_interval: float = 0.1,
-) -> Optional[int]:
+) -> int | None:
     """Wait for a keypress within a timeout and return its code, or None."""
     ctx = _start_func() if _start_func is not None else None
     try:

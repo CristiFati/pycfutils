@@ -182,6 +182,7 @@ python -m pycfutils.tools.start_server -a 127.0.0.1 -p 16180
 - The package has no global dependencies outside the Python standard library.
   However, some subpackages have their own requirements:
     - **pycfutils.setup.command**: requires [SetupTools](https://pypi.org/project/setuptools) (`python -m pip install setuptools`) for Python >= 3.12
+- Parts of code assisted by [Claude Code](https://claude.ai/code)
 
 ## Changelog
 

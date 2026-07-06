@@ -1,11 +1,13 @@
 """System-level utilities."""
 
+from __future__ import annotations
+
 import multiprocessing
 import os
 import sys
 import time
 from os.path import dirname
-from typing import AnyStr, Union
+from typing import AnyStr
 
 from pycfutils import common
 

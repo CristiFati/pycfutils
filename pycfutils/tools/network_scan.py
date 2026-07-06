@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 """CLI tool for scanning network address and port ranges."""
 
+from __future__ import annotations
+
 import argparse
+import collections.abc
 import socket
 import sys
 import time
-from typing import List, Optional, Sequence, Tuple
 
 from pycfutils.exceptions import NetworkException
 from pycfutils.io import read_key
@@ -20,8 +22,8 @@ def _ip_string(ip: int, family: socket.AddressFamily) -> str:
 
 
 def parse_args(
-    argv: Optional[Sequence[str]] = None,
-) -> Tuple[argparse.Namespace, List[str]]:
+    argv: collections.abc.Sequence[str] | None = None,
+) -> tuple[argparse.Namespace, list[str]]:
     parser = argparse.ArgumentParser(
         description="IP:Port scanner (TCP)",
         epilog="Scans IP:port combinations in the given specified values or ranges",

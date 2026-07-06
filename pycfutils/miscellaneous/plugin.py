@@ -1,10 +1,12 @@
 """Plugin discovery and loading framework."""
 
+from __future__ import annotations
+
 import inspect
 import pathlib
 import sys
 from importlib.util import module_from_spec, spec_from_file_location
-from typing import Any, Tuple, Type
+from typing import Any
 
 from pycfutils import common, miscellaneous
 
@@ -62,7 +64,7 @@ class BasePlugin:
         filesystem_filter_function: common.PathFilter = lambda arg: True,
         name_filter_function: common.StringFilter = lambda arg: True,
         item_filter_function: common.GenericFilter = lambda arg: True,
-    ) -> Tuple[Type["BasePlugin"], ...]:
+    ) -> tuple[type[BasePlugin], ...]:
         """Discover and load plugin subclasses from a file or directory.
 
         Args:

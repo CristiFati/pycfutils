@@ -1,5 +1,7 @@
 """Common type aliases used across pycfutils."""
 
+from __future__ import annotations
+
 import os
 import sys
 from typing import Any, AnyStr, Callable, Tuple, Union

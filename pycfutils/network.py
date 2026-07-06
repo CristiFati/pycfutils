@@ -1,5 +1,7 @@
 """Network server and client connection utilities."""
 
+from __future__ import annotations
+
 import ipaddress
 import select
 import socket
@@ -7,7 +9,7 @@ import sys
 import threading
 import traceback
 import types as builtin_types
-from typing import Any, AnyStr, Dict, Optional, Tuple, Type, Union
+from typing import Any, AnyStr, Dict, Union
 
 from pycfutils.exceptions import NetworkException
 from pycfutils.miscellaneous import uniques
@@ -45,7 +47,7 @@ _ADDRESS_DEFAULT = "localhost"
 _PORT_DEFAULT = 27183
 _TIMEOUT_DEFAULT = 1
 
-SockOpts = Optional[Dict[int, Dict[int, Any]]]
+SockOpts = Union[Dict[int, Dict[int, Any]], None]
 
 
 def _create_socket(
@@ -71,7 +73,7 @@ def _create_socket(
     return sock
 
 
-def _close_socket(sock: Any, method: Optional[int] = socket.SHUT_RDWR) -> int:
+def _close_socket(sock: Any, method: int | None = socket.SHUT_RDWR) -> int:
     if not isinstance(sock, socket.socket):
         return -1
     ret = 0
@@ -86,11 +88,11 @@ def _close_socket(sock: Any, method: Optional[int] = socket.SHUT_RDWR) -> int:
 
 
 def _parse_address(
-    address: Optional[AnyStr],
+    address: AnyStr | None,
     port: int,
-    family: Optional[AnyStr],
-    type_: Optional[AnyStr],
-) -> Tuple[Tuple[Any, int, socket.AddressFamily, socket.SocketKind], ...]:
+    family: AnyStr | None,
+    type_: AnyStr | None,
+) -> tuple[tuple[Any, int, socket.AddressFamily, socket.SocketKind], ...]:
     records = socket.getaddrinfo(
         address,
         port,
@@ -101,12 +103,12 @@ def _parse_address(
 
 
 def parse_address(
-    address: Optional[AnyStr],
+    address: AnyStr | None,
     port: int = 0,
-    family: Optional[AnyStr] = None,
-    type_: Optional[AnyStr] = None,
+    family: AnyStr | None = None,
+    type_: AnyStr | None = None,
     exact_matches: int = 0,
-) -> Tuple[Tuple[Any, int, socket.AddressFamily, socket.SocketKind], ...]:
+) -> tuple[tuple[Any, int, socket.AddressFamily, socket.SocketKind], ...]:
     """Resolve an address and port into a tuple of (address, port, family, type) records.
 
     Args:
@@ -155,8 +157,8 @@ class _Server:
         self,
         address: AnyStr,
         port: int,
-        family: Optional[AnyStr],
-        type_: Optional[AnyStr],
+        family: AnyStr | None,
+        type_: AnyStr | None,
         poll_timeout: float,
         silent: bool,
         options: SockOpts,
@@ -203,16 +205,16 @@ class _Server:
             self.close()
             raise NetworkException("Error creating server") from e
 
-    def __enter__(self) -> "_Server":
+    def __enter__(self) -> _Server:
         if not self.start():
             raise NetworkException("Could not start server")
         return self
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[builtin_types.TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: builtin_types.TracebackType | None,
     ) -> bool:
         self.close()
         return exc_type is None
@@ -270,7 +272,7 @@ class TCPServer(_Server):
         self,
         address: AnyStr,
         port: int,
-        family: Optional[AnyStr] = None,
+        family: AnyStr | None = None,
         poll_timeout: float = _TIMEOUT_DEFAULT,
         silent: bool = False,
         options: SockOpts = None,
@@ -303,13 +305,13 @@ class TCPServer(_Server):
 def connect_to_server(
     address: AnyStr,
     port: int,
-    family: Optional[str] = None,
+    family: str | None = None,
     attempts: int = 1,
     attempt_timeout: float = _TIMEOUT_DEFAULT,
     options: SockOpts = None,
     # If True, socket will have to be closed by caller
     _return_client_socket: bool = False,
-) -> Union[Tuple[Any, ...], socket.SocketType, None]:
+) -> tuple[Any, ...] | socket.SocketType | None:
     """Attempt a TCP connection and return the local address or the client socket.
 
     Args:

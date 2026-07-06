@@ -1,18 +1,20 @@
 #!/usr/bin/env python
 """CLI tool for CPU stress testing."""
 
+from __future__ import annotations
+
 import argparse
+import collections.abc
 import os
 import sys
 import time
-from typing import List, Optional, Sequence, Tuple
 
 from pycfutils.system import cpu_stress
 
 
 def parse_args(
-    argv: Optional[Sequence[str]] = None,
-) -> Tuple[argparse.Namespace, List[str]]:
+    argv: collections.abc.Sequence[str] | None = None,
+) -> tuple[argparse.Namespace, list[str]]:
     parser = argparse.ArgumentParser(description="CPU Stress")
     parser.add_argument(
         "--cpus",

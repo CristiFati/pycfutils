@@ -1,9 +1,11 @@
 """Setuptools command for building C/C++ libraries as static or dynamic."""
 
+from __future__ import annotations
+
 import os
 import shutil
 import sys
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 try:
     from distutils import log
@@ -36,7 +38,7 @@ class BuildCLibDll(build_clib):
     #   - `if build_info.get("dll"):` ...
     #   - `for src_base, dst_path in build_info.get("copy_files", {}).items():` ...
     # Would be nicer to refactor directly in distutils / setuptools
-    def build_libraries(self, libraries: List[Tuple[str, Dict[str, Any]]]) -> None:
+    def build_libraries(self, libraries: list[tuple[str, dict[str, Any]]]) -> None:
         """Compile and link libraries, supporting both static archives and shared objects."""
         for lib_name, build_info in libraries:
             sources = build_info.get("sources")

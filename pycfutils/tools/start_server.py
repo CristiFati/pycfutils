@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 """CLI tool for starting a listening server."""
 
+from __future__ import annotations
+
 import argparse
+import collections.abc
 import socket
 import sys
 import time
-from typing import List, Optional, Sequence, Tuple
 
 from pycfutils.exceptions import NetworkException
 from pycfutils.io import read_key
@@ -13,8 +15,8 @@ from pycfutils.network import SOCKET_FAMILIES, SOCKET_TYPE_TCP, TCPServer, parse
 
 
 def parse_args(
-    argv: Optional[Sequence[str]] = None,
-) -> Tuple[argparse.Namespace, List[str]]:
+    argv: collections.abc.Sequence[str] | None = None,
+) -> tuple[argparse.Namespace, list[str]]:
     parser = argparse.ArgumentParser(description="Start listening server")
     parser.add_argument(
         "--address",

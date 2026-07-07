@@ -2,8 +2,6 @@ import sys
 import threading
 import time
 
-from pynput.mouse import Button, Controller
-
 from pycfutils import gui as pg
 from pycfutils import io as pio
 from pycfutils.gui import effects as pge
@@ -11,6 +9,8 @@ from pycfutils.setup.command import build_clibdll as pscbcd
 
 
 def click(x, y, delay=2):
+    from pynput.mouse import Button, Controller
+
     time.sleep(delay)
     ctrl = Controller()
     pos = ctrl.position
@@ -20,6 +20,10 @@ def click(x, y, delay=2):
 
 
 if __name__ == "__main__":
+    plat = sys.platform.lower()
+    if plat != "win32":
+        print("Unsupported platform!\n")
+        sys.exit(0)
     print("Press a key: ", pio.read_key(timeout=1))
     x = 320
     y = 200

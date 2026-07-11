@@ -1,9 +1,13 @@
+import os
 import socket
 import sys
+import tempfile
 import time
 import unittest
 
-from pycfutils import network
+from pycfutils import miscellaneous, network
+
+_IS_WIN = sys.platform[:3].lower() == "win"
 
 
 class NetworkBaseTestCase(unittest.TestCase):
@@ -12,50 +16,81 @@ class NetworkBaseTestCase(unittest.TestCase):
         self.lh = "localhost"
         self.lh4 = "127.0.0.1"
         self.lh6 = "::1"
+        self.usf = os.path.join(
+            tempfile.mkdtemp(),
+            f"test.sock.{miscellaneous.timestamp_string(human_readable=False, microseconds=True)}",
+        )
         self.port = network._PORT_DEFAULT
-        self.families = (network.SOCKET_FAMILY_IPV4,)
-        if self.ipv6:
-            self.families += (network.SOCKET_FAMILY_IPV6,)
-        # if sys.platform[:3].lower() != "win":
-        #     self.families += (network.SOCKET_FAMILY_UNIX,)
         self.types = (network.SOCKET_TYPE_TCP, network.SOCKET_TYPE_UDP)
         self.timeout = network._TIMEOUT_DEFAULT
         self.min_conns = (2 if self.ipv6 else 1) - 1  # Greater
 
 
 class NetworkGenericTestCase(NetworkBaseTestCase):
-    def test__parse_address(self):
-        self.assertRaises(KeyError, network._parse_address, "", self.port, "fam", None)
-        self.assertRaises(KeyError, network._parse_address, "", self.port, None, "type")
-        plat = sys.platform.lower()
-        if plat[:3] == "win" or plat == "darwin":
+    def test__parse_network_address(self):
+        self.assertRaises(
+            KeyError, network._parse_network_address, "", self.port, "fam", None
+        )
+        self.assertRaises(
+            KeyError, network._parse_network_address, "", self.port, None, "type"
+        )
+        if _IS_WIN or sys.platform.lower() == "darwin":
             self.assertGreater(
-                len(network._parse_address("", self.port, None, None)), self.min_conns
+                len(network._parse_network_address("", self.port, None, None)),
+                self.min_conns,
             )
             self.assertGreater(
-                len(network._parse_address(None, self.port, None, None)), self.min_conns
+                len(network._parse_network_address(None, self.port, None, None)),
+                self.min_conns,
             )
         else:  # Linux (fallback)
             self.assertRaises(
-                socket.gaierror, network._parse_address, "", self.port, None, None
+                socket.gaierror,
+                network._parse_network_address,
+                "",
+                self.port,
+                None,
+                None,
             )
             self.assertGreater(
-                len(network._parse_address(None, self.port, None, None)), self.min_conns
+                len(network._parse_network_address(None, self.port, None, None)),
+                self.min_conns,
             )
         self.assertGreater(
-            len(network._parse_address(self.lh, self.port, None, None)), self.min_conns
+            len(network._parse_network_address(self.lh, self.port, None, None)),
+            self.min_conns,
         )
-        res = network._parse_address(self.lh4, self.port, None, None)
+        res = network._parse_network_address(self.lh4, self.port, None, None)
         for t in res:
             self.assertEqual(t[2], socket.AF_INET)
         if self.ipv6:
-            res = network._parse_address(self.lh6, self.port, None, None)
+            res = network._parse_network_address(self.lh6, self.port, None, None)
             for t in res:
                 self.assertEqual(t[2], socket.AF_INET6)
-        for family in self.families:
+        for family in network._NETWORK_SOCKET_FAMILIES:
             for typ in self.types:
-                res = network._parse_address(self.lh, self.port, family, typ)
+                res = network._parse_network_address(self.lh, self.port, family, typ)
                 self.assertEqual(len(res), 1)
+
+    @unittest.skipIf(_IS_WIN, "Unix sockets not supported on Windows")
+    def test__parse_unix_address(self):
+        with self.assertRaises(network.NetworkException):
+            network._parse_unix_address(None, None)
+        with self.assertRaises(network.NetworkException):
+            network._parse_unix_address("", None)
+        with self.assertRaises(network.NetworkException):
+            network._parse_unix_address("a" * network._UNIX_SUN_PATH_MAX, None)
+        with self.assertRaises(network.NetworkException):
+            network._parse_unix_address("/nonexistent_dir/test.sock", None)
+        res = network._parse_unix_address("/tmp/test.sock", None)
+        self.assertEqual(len(res), len(self.types))
+        for t in res:
+            self.assertEqual(t[1], 0)
+            self.assertEqual(t[2], socket.AF_UNIX)
+        res = network._parse_unix_address("/tmp/test.sock", network.SOCKET_TYPE_TCP)
+        self.assertEqual(len(res), 1)
+        self.assertEqual(res[0][2], socket.AF_UNIX)
+        self.assertEqual(res[0][3], socket.SOCK_STREAM)
 
     def test_parse_address(self):
         with self.assertRaises(network.NetworkException):
@@ -89,15 +124,36 @@ class NetworkGenericTestCase(NetworkBaseTestCase):
             self.assertGreater(len(network.parse_address(self.lh6, self.port)), 0)
             with self.assertRaises(network.NetworkException):
                 network.parse_address(self.lh, self.port, exact_matches=1)
-        for family in self.families:
+        for family in network._NETWORK_SOCKET_FAMILIES:
             for typ in self.types:
                 res = network.parse_address(
                     self.lh, self.port, family=family, type_=typ, exact_matches=1
                 )
                 self.assertEqual(len(res), 1)
+        if not _IS_WIN:
+            res = network.parse_address(
+                "/tmp/test.sock", family=network.SOCKET_FAMILY_UNIX
+            )
+            self.assertGreater(len(res), 0)
+            for t in res:
+                self.assertEqual(t[2], socket.AF_UNIX)
+            res = network.parse_address(
+                "/tmp/test.sock",
+                family=network.SOCKET_FAMILY_UNIX,
+                type_=network.SOCKET_TYPE_TCP,
+                exact_matches=1,
+            )
+            self.assertEqual(len(res), 1)
+            with self.assertRaises(network.NetworkException):
+                network.parse_address(None, family=network.SOCKET_FAMILY_UNIX)
+            with self.assertRaises(network.NetworkException):
+                network.parse_address(
+                    f"/nonexistent_dir/{self.usf}",
+                    family=network.SOCKET_FAMILY_UNIX,
+                )
 
     def test__create_socket(self):
-        families = tuple(network._SocketFamilyMap[e] for e in self.families)
+        families = tuple(network._SocketFamilyMap.values())
         types = tuple(network._SocketTypeMap[e] for e in self.types)
         opts = {
             socket.SOL_SOCKET: {
@@ -147,7 +203,7 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
         srvs = []
         pofs = 0
         try:
-            for family in self.families:
+            for family in network._NETWORK_SOCKET_FAMILIES:
                 s = network.TCPServer(self.lh, self.port + pofs, family=family)
                 pofs += 1
                 srvs.append(s)
@@ -173,6 +229,15 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
             self.port,
             attempt_timeout=0,
         )
+        for family in network._UNIX_SOCKET_FAMILIES:
+            self.assertRaises(
+                network.NetworkException,
+                network.connect_to_server,
+                self.usf,
+                0,
+                family=family,
+                attempt_timeout=0.5,
+            )
 
     def test_server_client(
         self,
@@ -247,3 +312,22 @@ class NetworkTCPServerClientTestCase(NetworkBaseTestCase):
                 self.port,
                 **{"attempt_timeout": 0.5},
             )
+        for family in network._UNIX_SOCKET_FAMILIES:
+            try:
+                with network.TCPServer(self.usf, 0, family=family, silent=True) as srv:
+                    cli = network.connect_to_server(
+                        self.usf,
+                        0,
+                        family=family,
+                        attempt_timeout=0.5,
+                        _return_client_socket=True,
+                    )
+                    try:
+                        network._close_socket(cli)
+                    except:
+                        pass
+                    time.sleep(0.1)
+                    self.assertEqual((srv.handled_total, srv.handled_ok), (1, 1))
+            finally:
+                if os.path.exists(self.usf):
+                    os.unlink(self.usf)

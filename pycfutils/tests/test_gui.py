@@ -4,8 +4,7 @@ import unittest
 from pycfutils import gui
 from pycfutils.gui import effects
 
-plat = sys.platform.lower()
-_IS_WIN = plat == "win32"
+_IS_WIN = sys.platform[:3].lower() == "win"
 
 
 # @TODO - cfati: Dummy

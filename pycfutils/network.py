@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ipaddress
+import os
 import select
 import socket
 import sys
@@ -18,13 +19,22 @@ SOCKET_FAMILY_IPV4 = "ipv4"
 SOCKET_FAMILY_IPV6 = "ipv6"
 SOCKET_FAMILY_UNIX = "unix"
 SOCKET_FAMILY_UNSPEC = "unspec"
-_SocketFamilyMap = {
+_NetworkSocketFamilyMap = {
     SOCKET_FAMILY_IPV4: socket.AF_INET,
-    # SOCKET_FAMILY_UNIX: socket.AF_UNIX,
-    # SOCKET_FAMILY_UNSPEC: socket.AF_UNSPEC,
 }
 if socket.has_ipv6:
-    _SocketFamilyMap[SOCKET_FAMILY_IPV6] = socket.AF_INET6
+    _NetworkSocketFamilyMap[SOCKET_FAMILY_IPV6] = socket.AF_INET6
+_NETWORK_SOCKET_FAMILIES = tuple(_NetworkSocketFamilyMap.keys())
+
+_UnixSocketFamilyMap = {}
+if hasattr(socket, "AF_UNIX"):
+    _UnixSocketFamilyMap[SOCKET_FAMILY_UNIX] = socket.AF_UNIX
+_UNIX_SOCKET_FAMILIES = tuple(_UnixSocketFamilyMap.keys())
+
+_SocketFamilyMap = {
+    **_NetworkSocketFamilyMap,
+    **_UnixSocketFamilyMap,
+}
 SOCKET_FAMILIES = tuple(_SocketFamilyMap.keys())
 SOCKET_FAMILY_DEFAULT = SOCKET_FAMILY_IPV4
 if SOCKET_FAMILY_DEFAULT not in SOCKET_FAMILIES:
@@ -42,6 +52,8 @@ SOCKET_TYPES = tuple(_SocketTypeMap.keys())
 SOCKET_TYPE_DEFAULT = SOCKET_TYPE_TCP
 if SOCKET_TYPE_DEFAULT not in SOCKET_TYPES:
     raise NetworkException("Invalid default socket type")
+
+_UNIX_SUN_PATH_MAX = 108
 
 _ADDRESS_DEFAULT = "localhost"
 _PORT_DEFAULT = 27183
@@ -87,7 +99,7 @@ def _close_socket(sock: Any, method: int | None = socket.SHUT_RDWR) -> int:
     return ret
 
 
-def _parse_address(
+def _parse_network_address(
     address: AnyStr | None,
     port: int,
     family: AnyStr | None,
@@ -96,10 +108,40 @@ def _parse_address(
     records = socket.getaddrinfo(
         address,
         port,
-        family=_SocketFamilyMap[family.lower()] if family is not None else 0,
+        family=(
+            _NetworkSocketFamilyMap[family.lower()]
+            if family is not None
+            else socket.AF_UNSPEC
+        ),
         type=_SocketTypeMap[type_.lower()] if type_ is not None else 0,
     )
     return tuple(uniques((*e[-1][:2], e[0], e[1]) for e in records))
+
+
+def _parse_unix_address(
+    address: AnyStr | None,
+    type_: AnyStr | None,
+) -> tuple[tuple[Any, int, socket.AddressFamily, socket.SocketKind], ...]:
+    if address is None:
+        raise NetworkException("Unix socket path must not be None")
+    addr_str = address.decode() if isinstance(address, bytes) else address
+    if not addr_str:
+        raise NetworkException("Unix socket path must not be empty")
+    path = os.path.realpath(addr_str)
+    if not os.path.isabs(path):
+        raise NetworkException("Unix socket path must be absolute")
+    if len(path.encode()) >= _UNIX_SUN_PATH_MAX:
+        raise NetworkException(
+            f"Unix socket path too long (max {_UNIX_SUN_PATH_MAX - 1} bytes)"
+        )
+    if not os.path.isdir(os.path.dirname(path)):
+        raise NetworkException("Unix socket parent directory must exist")
+    types = (
+        (_SocketTypeMap[type_.lower()],)
+        if type_ is not None
+        else tuple(_SocketTypeMap.values())
+    )
+    return tuple((addr_str, 0, socket.AF_UNIX, t) for t in types)
 
 
 def parse_address(
@@ -113,7 +155,7 @@ def parse_address(
 
     Args:
         address: Hostname or IP to resolve.
-        port: Port number (0 for any).
+        port: Port number (0 for any). Ignored for non-network families.
         family: Socket family name to filter by, or None for all.
         type_: Socket type name to filter by, or None for all.
         exact_matches: If positive, raise if the number of records differs.
@@ -122,32 +164,32 @@ def parse_address(
         type_ is not None and type_ not in SOCKET_TYPES
     ):
         raise NetworkException("Invalid family or type")
-    if address is not None and family is not None:
+    if family in _UNIX_SOCKET_FAMILIES:
+        records = _parse_unix_address(address, type_)
+    elif family in _NETWORK_SOCKET_FAMILIES or family is None:
+        if address is not None and family is not None:
+            try:
+                addr_str = address.decode() if isinstance(address, bytes) else address
+                parsed = ipaddress.ip_address(addr_str)
+            except ValueError:
+                pass
+            else:
+                if (family == SOCKET_FAMILY_IPV4 and parsed.version != 4) or (
+                    family == SOCKET_FAMILY_IPV6 and parsed.version != 6
+                ):
+                    raise NetworkException("Address does not match requested family")
         try:
-            addr_str = address.decode() if isinstance(address, bytes) else address
-            parsed = ipaddress.ip_address(addr_str)
-        except ValueError:
-            pass
-        else:
-            if (family == SOCKET_FAMILY_IPV4 and parsed.version != 4) or (
-                family == SOCKET_FAMILY_IPV6 and parsed.version != 6
-            ):
-                raise NetworkException("Address does not match requested family")
-    try:
-        records = _parse_address(
-            address,
-            port,
-            family,
-            type_,
-        )
-    except OSError as e:
-        raise NetworkException("Could not parse address") from e
-    else:
-        if exact_matches > 0 and exact_matches != len(records):
-            raise NetworkException(
-                f"Got {len(records)} records (expected {exact_matches})"
+            records = _parse_network_address(
+                address,
+                port,
+                family,
+                type_,
             )
-        return records
+        except OSError as e:
+            raise NetworkException("Could not parse address") from e
+    if exact_matches > 0 and exact_matches != len(records):
+        raise NetworkException(f"Got {len(records)} records (expected {exact_matches})")
+    return records
 
 
 class _Server:
@@ -168,7 +210,7 @@ class _Server:
 
         Args:
             address: Hostname or IP to bind to.
-            port: Port number to listen on.
+            port: Port number to listen on. Ignored for non-network families.
             family: Socket family name (e.g. "ipv4"), or None for auto.
             type_: Socket type name (e.g. "tcp"), or None for auto.
             poll_timeout: Seconds between polling cycles for incoming connections.
@@ -198,7 +240,10 @@ class _Server:
             self.socket = _create_socket(
                 resolved_family, resolved_type, 0, default_options
             )
-            self.socket.bind((resolved_addr, resolved_port))
+            if resolved_family in _UnixSocketFamilyMap.values():
+                self.socket.bind(resolved_addr)
+            elif resolved_family in _NetworkSocketFamilyMap.values():
+                self.socket.bind((resolved_addr, resolved_port))
             if resolved_type in (socket.SOCK_STREAM, socket.SOCK_SEQPACKET):
                 self.socket.listen(backlog)
         except OSError as e:
@@ -293,7 +338,10 @@ class TCPServer(_Server):
         try:
             client, peer = self.socket.accept()
             if not self.silent:
-                print(f"Established connection from {peer[0]:s}:{peer[1]:d}")
+                if isinstance(peer, tuple):
+                    print(f"Established connection from {peer[0]:s}:{peer[1]:d}")
+                else:
+                    print(f"Established connection from {peer}")
             _close_socket(client)
             return True
         except Exception as e:
@@ -316,7 +364,7 @@ def connect_to_server(
 
     Args:
         address: Hostname or IP to connect to.
-        port: Target port number.
+        port: Target port number. Ignored for non-network families.
         family: Socket family name (e.g. "ipv4", "ipv6"), or None for auto.
         attempts: Number of connection attempts before raising.
         attempt_timeout: Timeout in seconds for each attempt.
@@ -336,7 +384,10 @@ def connect_to_server(
             client = _create_socket(
                 resolved_family, resolved_type, attempt_timeout, options
             )
-            client.connect((resolved_addr, resolved_port))
+            if resolved_family in _UnixSocketFamilyMap.values():
+                client.connect(resolved_addr)
+            elif resolved_family in _NetworkSocketFamilyMap.values():
+                client.connect((resolved_addr, resolved_port))
             if _return_client_socket:
                 return client
             else:
@@ -366,11 +417,12 @@ __all__ = (
     "SOCKET_FAMILIES",
     # "SOCKET_FAMILY_DEFAULT",
     "SOCKET_FAMILY_IPV4",
-    # "SOCKET_FAMILY_UNIX",
     # "SOCKET_FAMILY_UNSPEC",
 )
 if socket.has_ipv6:
     __all__ += ("SOCKET_FAMILY_IPV6",)
+if hasattr(socket, "AF_UNIX"):
+    __all__ += ("SOCKET_FAMILY_UNIX",)
 __all__ += (
     "SOCKET_TYPES",
     # "SOCKET_TYPE_DEFAULT",

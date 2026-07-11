@@ -17,8 +17,7 @@ from wheel.bdist_wheel import bdist_wheel as bdist_wheel_orig
 from pycfutils.setup.command.build_clibdll import build_clibdll
 from pycfutils.setup.command.install_platlib import install_platlib
 
-plat = sys.platform.lower()
-_IS_WIN = plat == "win32"
+_IS_WIN = sys.platform[:3].lower() == "win"
 
 _NAME = "pycfutils"
 _CINTERFACE = "cinterface"
